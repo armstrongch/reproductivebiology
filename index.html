@@ -304,7 +304,7 @@
 				if (pointsGenerated == 0)
 				{
 					mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter - Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
-					mostRecentGeneratedBottomHeight = centerHeight - minDistFromCenter - Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
+					mostRecentGeneratedBottomHeight = centerHeight + minDistFromCenter + Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
 				}
 				else
 				{
@@ -337,12 +337,16 @@
 				for (let i = 0; i < topPoints.length; i++)
 				{
 					topPoints[i].x--;
+					bottomPoints[i].x--;
 				}
 				
 				if (topPoints[0].x < -distanceBetweenPoints)
 				{
 					topPoints.shift();
-					addPoints(topPoints[topPoints.length-1].x+distanceBetweenPoints)
+					addPoints(topPoints[topPoints.length-1].x+distanceBetweenPoints);
+					
+					bottomPoints.shift();
+					bottomPoints(bottomPoints[bottomPoints.length-1].x+distanceBetweenPoints);
 				}
 				
 				drawTaskOne();
@@ -370,15 +374,15 @@
 				ctx.fill();
 				
 				//Bottom Walls
-				/*ctx.beginPath();
+				ctx.beginPath();
 				ctx.moveTo(0, 480);
-				for (let i = 0; i < topPoints.length - 1; i++)
+				for (let i = 0; i < bottomPoints.length - 1; i++)
 				{
-					ctx.lineTo(topPoints[i].x, centerHeight + topPoints[i].y);
+					ctx.lineTo(bottomPoints[i].x, bottomPoints[i].y);
 				}
 				ctx.lineTo(640, 480);
 				ctx.closePath();
-				ctx.fill();*/
+				ctx.fill();
 				
 				//Lines
 				ctx.strokeStyle = black;
@@ -388,8 +392,8 @@
 					ctx.moveTo(topPoints[i].x, topPoints[i].y);
 					ctx.lineTo(topPoints[i+1].x, topPoints[i+1].y);
 					
-					//ctx.moveTo(topPoints[i].x, centerHeight + topPoints[i].y);
-					//ctx.lineTo(topPoints[i+1].x, centerHeight + topPoints[i+1].y);
+					ctx.moveTo(bottomPoints[i].x, bottomPoints[i].y);
+					ctx.lineTo(bottomPoints[i+1].x, bottomPoints[i+1].y);
 				}
 				ctx.stroke();
 			}
