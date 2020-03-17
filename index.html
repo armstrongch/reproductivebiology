@@ -269,23 +269,32 @@
 			
 			// Tasks
 			
-			var distanceBetweenPoints = 64;
-			var maxHeightDifferential = 240;
+			var distanceBetweenPoints = 32;
+			var maxHeightDifferential = 180;
 			var centerHeight = 240;
 			var points = [];
+			
+			var lightPink = '#ffc4bc';
+			var darkPink = '#ff7379';
+			var black = '#000000';
 			
 			function setupTaskOne()
 			{
 				console.log("Setting up Task One");
 				taskSetUp[taskIndex] = true;
 				
-				for (let i = 0; i < 640 + distanceBetweenPoints*2; i += distanceBetweenPoints)
+				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
 				{
-					var pointHeight = centerHeight - maxHeightDifferential/2 + Math.floor((Math.random() * maxHeightDifferential));
+					var pointHeight = generateRandomPointHeight();
 					points.push(
 						{x:i, y:pointHeight}
 					);
 				}
+			}
+			
+			function generateRandomPointHeight()
+			{
+				return centerHeight - maxHeightDifferential/2 + Math.floor((Math.random() * maxHeightDifferential));
 			}
 			
 			function taskOne()
@@ -294,7 +303,71 @@
 				{
 					setupTaskOne();
 				}
+				
+				//Move points to the left
+				for (let i = 0; i < points.length; i++)
+				{
+					points[i].x--;
+				}
+				
+				if (points[0].x < -distanceBetweenPoints)
+				{
+					points.shift();
+					points.push(
+						{
+							x: points[points.length-1].x+distanceBetweenPoints,
+							y:generateRandomPointHeight()
+						}
+					)
+				}
+				
+				drawTaskOne();
 				console.log("Task One Loop");
+			}
+			
+			function drawTaskOne()
+			{
+				ctx.fillStyle = lightPink;
+				
+				//Background
+				ctx.beginPath();
+				ctx.fillRect(0, 0, 640, 480);
+				
+				//Top Walls
+				ctx.fillStyle = darkPink;
+				ctx.beginPath();
+				ctx.moveTo(0, 0);
+				for (let i = 0; i < points.length - 1; i++)
+				{
+					ctx.lineTo(points[i].x, points[i].y - maxHeightDifferential/2);
+				}
+				ctx.lineTo(640, 0);
+				ctx.closePath();
+				ctx.fill();
+				
+				//Bottom Walls
+				ctx.beginPath();
+				ctx.moveTo(0, 480);
+				for (let i = 0; i < points.length - 1; i++)
+				{
+					ctx.lineTo(points[i].x, points[i].y + maxHeightDifferential/2);
+				}
+				ctx.lineTo(640, 480);
+				ctx.closePath();
+				ctx.fill();
+				
+				//Lines
+				ctx.strokeStyle = black;
+				ctx.beginPath();
+				for (let i = 0; i < points.length - 1; i++)
+				{
+					ctx.moveTo(points[i].x, points[i].y - maxHeightDifferential/2);
+					ctx.lineTo(points[i+1].x, points[i+1].y - maxHeightDifferential/2);
+					
+					ctx.moveTo(points[i].x, points[i].y + maxHeightDifferential/2);
+					ctx.lineTo(points[i+1].x, points[i+1].y + maxHeightDifferential/2);
+				}
+				ctx.stroke();
 			}
 			
 		</script>
