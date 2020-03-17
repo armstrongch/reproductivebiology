@@ -269,10 +269,23 @@
 			
 			// Tasks
 			
+			var distanceBetweenPoints = 64;
+			var maxHeightDifferential = 240;
+			var centerHeight = 240;
+			var points = [];
+			
 			function setupTaskOne()
 			{
 				console.log("Setting up Task One");
 				taskSetUp[taskIndex] = true;
+				
+				for (let i = 0; i < 640 + distanceBetweenPoints*2; i += distanceBetweenPoints)
+				{
+					var pointHeight = centerHeight - maxHeightDifferential/2 + Math.floor((Math.random() * maxHeightDifferential));
+					points.push(
+						{x:i, y:pointHeight}
+					);
+				}
 			}
 			
 			function taskOne()
