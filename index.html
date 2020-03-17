@@ -270,9 +270,17 @@
 			// Tasks
 			
 			var distanceBetweenPoints = 32;
-			var maxHeightDifferential = 180;
+			var maxHeightDifferential = 90; //get rid of this
+			var minDistFromCenter = 120;
+			var maxDistFromCenter = 180;
+			var maxCurveHeight = 32;
 			var centerHeight = 240;
-			var points = [];
+			var topPoints = [];
+			var bottomPoints = [];
+			
+			var PointsGenerated;
+			var mostRecentGeneratedTopHeight;
+			var mostRecentGeneratedBottomHeight;
 			
 			var lightPink = '#ffc4bc';
 			var darkPink = '#ff7379';
@@ -283,18 +291,39 @@
 				console.log("Setting up Task One");
 				taskSetUp[taskIndex] = true;
 				
+				pointsGenerated = 0;
+				
 				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
 				{
-					var pointHeight = generateRandomPointHeight();
-					points.push(
-						{x:i, y:pointHeight}
-					);
+					addPoints(i);
 				}
 			}
 			
-			function generateRandomPointHeight()
+			function addPoints(xCoordinate)
 			{
-				return centerHeight - maxHeightDifferential/2 + Math.floor((Math.random() * maxHeightDifferential));
+				if (pointsGenerated == 0)
+				{
+					mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter - Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
+					mostRecentGeneratedBottomHeight = centerHeight - minDistFromCenter - Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
+				}
+				else
+				{
+					mostRecentGeneratedTopHeight = mostRecentGeneratedTopHeight - maxCurveHeight/2 + maxCurveHeight*Math.random();
+					mostRecentGeneratedBottomHeight = mostRecentGeneratedBottomHeight - maxCurveHeight/2 + maxCurveHeight*Math.random();
+				}
+				
+				pointsGenerated++;
+				if (pointsGenerated == 2)
+				{
+					pointsGenerated = 0;
+				}
+				
+				topPoints.push(
+					{x: xCoordinate, y: mostRecentGeneratedTopHeight}
+				);
+				bottomPoints.push(
+					{x: xCoordinate, y: mostRecentGeneratedBottomHeight}
+				);
 			}
 			
 			function taskOne()
@@ -305,20 +334,15 @@
 				}
 				
 				//Move points to the left
-				for (let i = 0; i < points.length; i++)
+				for (let i = 0; i < topPoints.length; i++)
 				{
-					points[i].x--;
+					topPoints[i].x--;
 				}
 				
-				if (points[0].x < -distanceBetweenPoints)
+				if (topPoints[0].x < -distanceBetweenPoints)
 				{
-					points.shift();
-					points.push(
-						{
-							x: points[points.length-1].x+distanceBetweenPoints,
-							y:generateRandomPointHeight()
-						}
-					)
+					topPoints.shift();
+					addPoints(topPoints[topPoints.length-1].x+distanceBetweenPoints)
 				}
 				
 				drawTaskOne();
@@ -337,35 +361,35 @@
 				ctx.fillStyle = darkPink;
 				ctx.beginPath();
 				ctx.moveTo(0, 0);
-				for (let i = 0; i < points.length - 1; i++)
+				for (let i = 0; i < topPoints.length - 1; i++)
 				{
-					ctx.lineTo(points[i].x, points[i].y - maxHeightDifferential/2);
+					ctx.lineTo(topPoints[i].x, topPoints[i].y);
 				}
 				ctx.lineTo(640, 0);
 				ctx.closePath();
 				ctx.fill();
 				
 				//Bottom Walls
-				ctx.beginPath();
+				/*ctx.beginPath();
 				ctx.moveTo(0, 480);
-				for (let i = 0; i < points.length - 1; i++)
+				for (let i = 0; i < topPoints.length - 1; i++)
 				{
-					ctx.lineTo(points[i].x, points[i].y + maxHeightDifferential/2);
+					ctx.lineTo(topPoints[i].x, centerHeight + topPoints[i].y);
 				}
 				ctx.lineTo(640, 480);
 				ctx.closePath();
-				ctx.fill();
+				ctx.fill();*/
 				
 				//Lines
 				ctx.strokeStyle = black;
 				ctx.beginPath();
-				for (let i = 0; i < points.length - 1; i++)
+				for (let i = 0; i < topPoints.length - 1; i++)
 				{
-					ctx.moveTo(points[i].x, points[i].y - maxHeightDifferential/2);
-					ctx.lineTo(points[i+1].x, points[i+1].y - maxHeightDifferential/2);
+					ctx.moveTo(topPoints[i].x, topPoints[i].y);
+					ctx.lineTo(topPoints[i+1].x, topPoints[i+1].y);
 					
-					ctx.moveTo(points[i].x, points[i].y + maxHeightDifferential/2);
-					ctx.lineTo(points[i+1].x, points[i+1].y + maxHeightDifferential/2);
+					//ctx.moveTo(topPoints[i].x, centerHeight + topPoints[i].y);
+					//ctx.lineTo(topPoints[i+1].x, centerHeight + topPoints[i+1].y);
 				}
 				ctx.stroke();
 			}
