@@ -51,7 +51,7 @@
 				{
 					header: "Finding an Egg",
 					description: "Educational description goes here.",
-					instructions: "Instructions to play the game go here."
+					instructions: "Tap the space bar to hop all the way to the fallopian tube!"
 				},
 				{
 					header: "Calcium Collection",
@@ -281,6 +281,10 @@
 			
 			var sperm_image = new Image();
 			sperm_image.src = 'sperm.png';
+			
+			var sperm2_image = new Image();
+			sperm2_image.src = 'sperm2.png';
+			
 			var sperm_image_height = 93;
 			var sperm_image_width = 367;
 			var sperm_scale = 1/3;
@@ -289,7 +293,9 @@
 			var sperm_hitbox_x = sperm_image_width * sperm_scale * 0.9;
 			var sperm_hitbox_y = sperm_image_height * sperm_scale * 0.7;
 			
-			var sperm_gravity = 0.5;
+			var sperm_gravity = 0.8;
+			var sperm_jump_speed = 10;
+			var scrollSpeed = 5;
 			
 			//Task One Setup Variables
 			var topPoints;
@@ -304,6 +310,10 @@
 			
 			var dangerPointIndex;
 			var dangerPoint;
+			
+			var tailMoveCounter;
+			var tailSpeed;
+			var tailImageIndex;
 			
 			function setupTaskOne()
 			{
@@ -321,6 +331,10 @@
 				
 				topPoints = [];
 				bottomPoints = [];
+				
+				tailSpeed = 10;
+				tailMoveCounter = 0;
+				tailImageIndex = 1;
 				
 				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
 				{
@@ -365,8 +379,8 @@
 				//Move points to the left
 				for (let i = 0; i < topPoints.length; i++)
 				{
-					topPoints[i].x--;
-					bottomPoints[i].x--;
+					topPoints[i].x -= scrollSpeed;
+					bottomPoints[i].x -= scrollSpeed;
 				}
 				
 				if (topPoints[0].x < -distanceBetweenPoints)
@@ -419,7 +433,18 @@
 				
 				if (space)
 				{
-					sperm_speed = -8;
+					sperm_speed = -sperm_jump_speed;
+				}
+				
+				tailMoveCounter++;
+				if (tailMoveCounter > tailSpeed)
+				{
+					tailMoveCounter = 0;
+					tailImageIndex++;
+					if (tailImageIndex == 3)
+					{
+						tailImageIndex = 1;
+					}
 				}
 				
 				drawTaskOne();
@@ -470,11 +495,20 @@
 				}
 				ctx.stroke();
 				
-				ctx.drawImage(sperm_image, sperm_x, sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
+				if (tailImageIndex == 1)
+				{
+					ctx.drawImage(sperm_image, sperm_x, sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
+				}
+				else
+				{
+					var upsidedown_sperm_y = sperm_y + sperm_image_height*sperm_scale - sperm_hitbox_y;
+					
+					ctx.drawImage(sperm2_image, sperm_x, upsidedown_sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
+				}
 				
 				/*
 				ctx.fillStyle = black;
-				ctx.beginPath();
+				ctx.beginPath();   
 				ctx.arc(
 					sperm_x + sperm_hitbox_x, 
 					sperm_y + sperm_hitbox_y,
