@@ -112,6 +112,11 @@
 				}
 			}
 			
+			function completeTask()
+			{
+				clearInterval(gameInterval);
+			}
+			
 			function loadPage()
 			{
 				gameCanvas.width = 640;
@@ -270,10 +275,20 @@
 			
 			//Task One Constants
 			var distanceBetweenPoints = 32;
-			var minDistFromCenter = 120;
+			var minDistFromCenter = 80;
 			var maxDistFromCenter = 180;
 			var maxCurveHeight = 32;
 			var centerHeight = 240;
+			
+			var vaginaPeakIndex = 30;
+			var minDistFromCenter_hole = 50;
+			var maxDistFromCenter_hole = 50;
+			
+			var fallopianTubePeakIndex = 60;
+			var minDistFromCenter_fallopianTube = 80;
+			var maxDistFromCenter_fallopianTube = 110;
+			
+			var finishPeakIndex = 85;
 			
 			var lightPink = '#ffc4bc';
 			var darkPink = '#ff7379';
@@ -294,7 +309,7 @@
 			var sperm_hitbox_y = sperm_image_height * sperm_scale * 0.7;
 			
 			var sperm_gravity = 0.8;
-			var sperm_jump_speed = 10;
+			var sperm_jump_speed = 8;
 			var scrollSpeed = 5;
 			
 			//Task One Setup Variables
@@ -303,6 +318,8 @@
 			var PointsGenerated;
 			var mostRecentGeneratedTopHeight;
 			var mostRecentGeneratedBottomHeight;
+			
+			var peaksGenerated;
 			
 			var sperm_x;
 			var sperm_y;
@@ -328,6 +345,7 @@
 				dangerPoint = {x:-1, y:-1};
 				
 				pointsGenerated = 0;
+				peaksGenerated = 0;
 				
 				topPoints = [];
 				bottomPoints = [];
@@ -346,8 +364,30 @@
 			{
 				if (pointsGenerated == 0)
 				{
-					mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter - Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
-					mostRecentGeneratedBottomHeight = centerHeight + minDistFromCenter + Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
+					if ((peaksGenerated == vaginaPeakIndex) || (peaksGenerated == fallopianTubePeakIndex))
+					{
+						mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter_hole - Math.floor((Math.random() * (maxDistFromCenter_hole - minDistFromCenter_hole)));
+						
+						mostRecentGeneratedBottomHeight = centerHeight + minDistFromCenter_hole + Math.floor((Math.random() * (maxDistFromCenter_hole - minDistFromCenter_hole)));
+					}
+					else if (peaksGenerated > fallopianTubePeakIndex)
+					{
+						mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter_fallopianTube - Math.floor((Math.random() * (maxDistFromCenter_fallopianTube - minDistFromCenter_fallopianTube)));
+						
+						mostRecentGeneratedBottomHeight = centerHeight + minDistFromCenter_fallopianTube + Math.floor((Math.random() * (maxDistFromCenter_fallopianTube - minDistFromCenter_fallopianTube)));
+					}
+					else if (peaksGenerated > finishPeakIndex)
+					{
+						completeTask();
+					}
+					else
+					{
+						mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter - Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
+						
+						mostRecentGeneratedBottomHeight = centerHeight + minDistFromCenter + Math.floor((Math.random() * (maxDistFromCenter - minDistFromCenter)));
+					}
+					
+					peaksGenerated++;
 				}
 				else
 				{
@@ -504,6 +544,15 @@
 					var upsidedown_sperm_y = sperm_y + sperm_image_height*sperm_scale - sperm_hitbox_y;
 					
 					ctx.drawImage(sperm2_image, sperm_x, upsidedown_sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
+				}
+				
+				if (peaksGenerated > finishPeakIndex)
+				{
+					completeTask();
+					ctx.textAlign = "center";
+					ctx.fillStyle = black;
+					ctx.font = "30px Impact";
+					ctx.fillText("Task Complete!", 320, 200);
 				}
 				
 				/*
