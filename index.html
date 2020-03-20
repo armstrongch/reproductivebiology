@@ -56,7 +56,7 @@
 				{
 					header: "Calcium Collection",
 					description: "Educational description goes here.",
-					instructions: "Instructions to play the game go here."
+					instructions: "Tap the space bar to collect calcium on the way to the egg!"
 				},
 				{
 					header: "ZP3 Binding",
@@ -68,9 +68,7 @@
 			var gameLoops =
 			[
 				taskOne,
-				function() {
-					console.log("Task Two Loop");
-				},
+				taskTwo,
 				function() {
 					console.log("Task Three Loop");
 				}
@@ -293,6 +291,8 @@
 			var lightPink = '#ffc4bc';
 			var darkPink = '#ff7379';
 			var black = '#000000';
+			var yellow = '#FFD966';
+			var brown = '#7F6000';
 			
 			var sperm_image = new Image();
 			sperm_image.src = 'sperm.png';
@@ -303,6 +303,17 @@
 			var sperm_image_height = 93;
 			var sperm_image_width = 367;
 			var sperm_scale = 1/3;
+			
+			/*
+			var calcium_image = new Image();
+			calcium_image.src = 'calcium.png';
+			var calcium_image_height = 66;
+			var calcium_image_width = 82;
+			var calcium_scale = 0.5;
+			*/
+			
+			var maxDistFromCenter_calcium = minDistFromCenter_fallopianTube - 15;
+			var calcium_radius = 23;
 			
 			var sperm_hitbox_radius = 10;
 			var sperm_hitbox_x = sperm_image_width * sperm_scale * 0.9;
@@ -315,6 +326,7 @@
 			//Task One Setup Variables
 			var topPoints;
 			var bottomPoints;
+			var calciumPoints;
 			var PointsGenerated;
 			var mostRecentGeneratedTopHeight;
 			var mostRecentGeneratedBottomHeight;
@@ -357,6 +369,36 @@
 				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
 				{
 					addPoints(i);
+				}
+			}
+			
+			function setupTaskTwo()
+			{
+				console.log("Setting up Task Two");
+				taskSetUp[taskIndex] = true;
+				
+				sperm_x = distanceBetweenPoints * 2;
+				sperm_y = centerHeight;
+				sperm_speed = 0;
+				
+				dangerPointIndex = -1;
+				dangerPoint = {x:-1, y:-1};
+				
+				pointsGenerated = 0;
+				peaksGenerated = 60; //start in the fallopian tube
+				
+				topPoints = [];
+				bottomPoints = [];
+				calciumPoints = [];
+				
+				tailSpeed = 10;
+				tailMoveCounter = 0;
+				tailImageIndex = 1;
+				
+				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
+				{
+					addPoints(i);
+					calciumPoints.push(-1);
 				}
 			}
 			
@@ -409,6 +451,98 @@
 				);
 			}
 			
+			function taskTwo()
+			{
+				if (taskSetUp[taskIndex] == false)
+				{
+					setupTaskTwo();
+				}
+				
+				//Move points to the left
+				for (let i = 0; i < topPoints.length; i++)
+				{
+					topPoints[i].x -= scrollSpeed;
+					bottomPoints[i].x -= scrollSpeed;
+				}
+				
+				if (topPoints[0].x < -distanceBetweenPoints)
+				{
+					topPoints.shift();
+					bottomPoints.shift();
+					calciumPoints.shift();
+					addPoints(topPoints[topPoints.length-1].x+distanceBetweenPoints);
+					if (Math.floor(Math.random()*5) == 0)
+					{
+						var randCalciumPoint = centerHeight - maxDistFromCenter_calcium + Math.random()*maxDistFromCenter_calcium*2;
+						calciumPoints.push(randCalciumPoint);
+					}
+					else
+					{
+						calciumPoints.push(-1);
+					}
+				}
+				
+				for (let i = 0; i < topPoints.length - 1; i++)
+				{
+					if ((sperm_x + sperm_hitbox_x >= topPoints[i].x) 
+					&& (sperm_x + sperm_hitbox_x <= topPoints[i+1].x))
+					{
+						dangerPointIndex = i;
+						i = topPoints.length;
+					}
+				}
+				
+				if (dangerPointIndex > 0)
+				{
+					var x1 = topPoints[dangerPointIndex].x;
+					var x2 = topPoints[dangerPointIndex+1].x;
+					var y1 = topPoints[dangerPointIndex].y;
+					var y2 = topPoints[dangerPointIndex+1].y;
+					
+					var slope = (y2 - y1) / (x2 - x1);
+					var y_intercept = y1 - (slope * x1);
+					var dangerY_top = slope * (sperm_x + sperm_hitbox_x) + y_intercept;
+					
+					x1 = bottomPoints[dangerPointIndex].x;
+					x2 = bottomPoints[dangerPointIndex+1].x;
+					y1 = bottomPoints[dangerPointIndex].y;
+					y2 = bottomPoints[dangerPointIndex+1].y;
+					
+					slope = (y2 - y1) / (x2 - x1);
+					y_intercept = y1 - (slope * x1);
+					var dangerY_bottom = slope * (sperm_x + sperm_hitbox_x) + y_intercept;
+					
+					var sperm_calculatedPosition_y = sperm_y + sperm_hitbox_y;
+					if ((sperm_calculatedPosition_y - dangerY_top < sperm_hitbox_radius)
+					|| (dangerY_bottom - sperm_calculatedPosition_y < sperm_hitbox_radius))
+					{
+						showGame();
+					}
+				}
+				
+				sperm_speed += sperm_gravity;
+				sperm_y += sperm_speed;
+				
+				if (space)
+				{
+					sperm_speed = -sperm_jump_speed;
+				}
+				
+				tailMoveCounter++;
+				if (tailMoveCounter > tailSpeed)
+				{
+					tailMoveCounter = 0;
+					tailImageIndex++;
+					if (tailImageIndex == 3)
+					{
+						tailImageIndex = 1;
+					}
+				}
+				
+				drawTaskTwo();
+				console.log("Task Two Loop");
+			}
+
 			function taskOne()
 			{
 				if (taskSetUp[taskIndex] == false)
@@ -546,7 +680,7 @@
 					ctx.drawImage(sperm2_image, sperm_x, upsidedown_sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
 				}
 				
-				if (peaksGenerated > finishPeakIndex)
+				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 0))
 				{
 					completeTask();
 					ctx.textAlign = "center";
@@ -554,7 +688,11 @@
 					ctx.font = "30px Impact";
 					ctx.fillText("Task Complete!", 320, 200);
 				}
-				
+			}
+			
+			function drawTaskTwo()
+			{
+				drawTaskOne();
 				/*
 				ctx.fillStyle = black;
 				ctx.beginPath();   
@@ -564,21 +702,43 @@
 					sperm_hitbox_radius,
 					0, 2*Math.PI);
 				ctx.fill();
-				
-				if (dangerPointIndex > 0)
-				{
-					ctx.strokeStyle = '#00FFFF';
-					ctx.beginPath();
-					ctx.moveTo(topPoints[dangerPointIndex].x, 
-						topPoints[dangerPointIndex].y);
-					ctx.lineTo(topPoints[dangerPointIndex + 1].x, 
-						topPoints[dangerPointIndex + 1].y);
-					ctx.moveTo(bottomPoints[dangerPointIndex].x, 
-						bottomPoints[dangerPointIndex].y);
-					ctx.lineTo(bottomPoints[dangerPointIndex + 1].x, 
-						bottomPoints[dangerPointIndex + 1].y);
-					ctx.stroke();
 				}*/
+				
+				for (let i = 0; i < calciumPoints.length; i++)
+				{
+					if (calciumPoints[i] != -1)
+					{
+						var calcium_x = topPoints[i].x + calcium_radius/2;
+						var calcium_y = calciumPoints[i] + calcium_radius/2;
+						
+						ctx.fillStyle = yellow;
+						ctx.beginPath()
+						ctx.arc(
+							calcium_x,
+							calcium_y,
+							calcium_radius,
+							0, 2*Math.PI
+						);
+						ctx.fill();
+						
+						ctx.strokeStyle = brown;
+						ctx.beginPath()
+						ctx.arc(
+							calcium_x,
+							calcium_y,
+							calcium_radius,
+							0, 2*Math.PI
+						);
+						ctx.stroke();
+						
+						ctx.textAlign = "center";
+						ctx.fillStyle = black;
+						ctx.font = "20px Arial";
+						ctx.fillText("Ca", calcium_x - 5, calcium_y + 8);
+						ctx.font = "14px Arial";
+						ctx.fillText("2+", calcium_x + 15, calcium_y + 2);
+					}
+				}
 			}
 			
 		</script>
