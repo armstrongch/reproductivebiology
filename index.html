@@ -61,7 +61,7 @@
 				{
 					header: "ZP3 Binding",
 					description: "Educational description goes here.",
-					instructions: "Instructions to play the game go here."
+					instructions: "Tap the space bar at the perfect moment to bind to ZP3."
 				}
 			];
 			
@@ -69,9 +69,7 @@
 			[
 				taskOne,
 				taskTwo,
-				function() {
-					console.log("Task Three Loop");
-				}
+				taskThree
 			];
 			
 			var taskSetUp = [];
@@ -192,6 +190,7 @@
 				{
 					taskIndex--;
 					showInfo();
+					$('#previousButton').blur();
 				}
 			}
 			
@@ -201,6 +200,8 @@
 				{
 					taskIndex++;
 					showInfo();
+					$('#infoDiv').focus();
+					$('#nextButton').blur();
 				}
 			}
 			
@@ -269,14 +270,15 @@
 				space = false;
 			}
 			
-			// Tasks
-			
-			//Task One Constants
+			//Task Constants
 			var distanceBetweenPoints = 32;
 			var minDistFromCenter = 80;
 			var maxDistFromCenter = 180;
 			var maxCurveHeight = 32;
 			var centerHeight = 240;
+			
+			var maxDistFromCenter_taskThree = 230
+			var minDistFromCenter_taskThree = 220;
 			
 			var vaginaPeakIndex = 30;
 			var minDistFromCenter_hole = 50;
@@ -293,6 +295,7 @@
 			var black = '#000000';
 			var yellow = '#FFD966';
 			var brown = '#7F6000';
+			//var green = '#61bf26'; //(current unused)
 			
 			var sperm_image = new Image();
 			sperm_image.src = 'sperm.png';
@@ -307,9 +310,16 @@
 			var egg_image = new Image();
 			egg_image.src = 'egg.png';
 			var egg_scale = 1/4;
+			var egg_zp3_scale = 1/3;
 			
 			var egg_image_height = 527;
 			var egg_image_width = 527;
+			
+			var egg_zp3_image = new Image();
+			egg_zp3_image.src = 'egg_zp3.png';
+			
+			var egg_zp3_image_height = 1113;
+			var egg_zp3_image_width = 1146;
 			
 			var maxDistFromCenter_calcium = minDistFromCenter_fallopianTube - 15;
 			var calcium_radius = 23;
@@ -324,7 +334,13 @@
 			
 			var targetCalcium = 10;
 			
-			//Task One Setup Variables
+			var egg_x = 300;
+			var egg_y = centerHeight - egg_zp3_image_height*egg_zp3_scale/2;
+			
+			var aimStartDistance = 20;
+			var aimEndDistance = 60;
+			
+			//Task Setup Variables
 			var topPoints;
 			var bottomPoints;
 			var calciumPoints;
@@ -338,6 +354,7 @@
 			var sperm_x;
 			var sperm_y;
 			var sperm_speed;
+			var sperm_direction;
 			
 			var dangerPointIndex;
 			var dangerPoint;
@@ -348,6 +365,14 @@
 			
 			var createdEgg;
 			var gotEgg;
+			
+			var spermAimRange;
+			var spermAimRangeStart;
+			var spermAimSpeed;
+			var spermAimCounter;
+			
+			var zpPoints;
+			var zpRadius = 10;
 			
 			function setupTaskOne()
 			{
@@ -411,11 +436,58 @@
 				}
 			}
 			
+			function setupTaskThree()
+			{
+				console.log("Setting up Task Two");
+				taskSetUp[taskIndex] = true;
+				
+				sperm_x = distanceBetweenPoints;
+				sperm_y = centerHeight;
+				sperm_speed = 0;
+				
+				topPoints = [];
+				bottomPoints = [];
+				pointsGenerated = 0;
+				peaksGenerated = 0;
+				
+				tailSpeed = 2.5;
+				tailMoveCounter = 0;
+				tailImageIndex = 1;
+				
+				spermAimRange = 90;
+				spermAimRangeStart = 45;
+				spermAimSpeed = 1;
+				spermAimCounter = 0;
+				
+				sperm_speed = 0;
+				sperm_direction = 0;
+				
+				zpPoints = [];
+				
+				zpPoints.push({x: egg_x + 20, y: egg_y + 130});
+				zpPoints.push({x: egg_x + 11, y: egg_y + 185});
+				zpPoints.push({x: egg_x + 21, y: egg_y + 243});
+				zpPoints.push({x: egg_x + 45, y: egg_y + 295});
+				
+				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
+				{
+					addPoints(i);
+				}
+				
+				gotEgg = false; //repurposing this for ZP3
+			}
+			
 			function addPoints(xCoordinate)
 			{
 				if (pointsGenerated == 0)
 				{
-					if ((peaksGenerated == vaginaPeakIndex) || (peaksGenerated == fallopianTubePeakIndex))
+					if (taskIndex == 2)
+					{
+						mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter_taskThree - Math.floor((Math.random() * (maxDistFromCenter_taskThree - minDistFromCenter_taskThree)));
+						
+						mostRecentGeneratedBottomHeight = centerHeight + minDistFromCenter_taskThree + Math.floor((Math.random() * (maxDistFromCenter_taskThree - minDistFromCenter_taskThree)));
+					}
+					else if ((peaksGenerated == vaginaPeakIndex) || (peaksGenerated == fallopianTubePeakIndex))
 					{
 						mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter_hole - Math.floor((Math.random() * (maxDistFromCenter_hole - minDistFromCenter_hole)));
 						
@@ -458,6 +530,78 @@
 				bottomPoints.push(
 					{x: xCoordinate, y: mostRecentGeneratedBottomHeight}
 				);
+			}
+			
+			function taskThree()
+			{
+				if (taskSetUp[taskIndex] == false)
+				{
+					setupTaskThree();
+				}
+				
+				tailMoveCounter++;
+				if (tailMoveCounter > tailSpeed)
+				{
+					tailMoveCounter = 0;
+					tailImageIndex++;
+					if (tailImageIndex == 3)
+					{
+						tailImageIndex = 1;
+					}
+				}
+				
+				if (sperm_speed > 0)
+				{
+					var newSpermX = sperm_x + Math.cos(sperm_direction * Math.PI / 180) * sperm_speed;
+					var newSpermY = sperm_y + Math.sin(sperm_direction * Math.PI / 180) * sperm_speed;
+					
+					sperm_x = newSpermX;
+					sperm_y = newSpermY;
+					
+					for (let i = 0; i < zpPoints.length; i++)
+					{
+						if (Math.abs(zpPoints[i].x - sperm_x - sperm_hitbox_x) < 30)
+						{
+							var x_dif = sperm_x + sperm_hitbox_x - zpPoints[i].x;
+							var y_dif = sperm_y + sperm_hitbox_y - zpPoints[i].y;
+							var dist = Math.sqrt(x_dif*x_dif + y_dif*y_dif);
+							
+							if (dist < sperm_hitbox_radius + zpRadius)
+							{
+								gotEgg = true;
+								completeTask();
+							}
+						}
+					}
+					
+					if ((sperm_x + sperm_hitbox_x > 700) 
+						|| (sperm_y + sperm_hitbox_y < 0) 
+						|| (sperm_y + sperm_hitbox_y > 480))
+					{
+						showGame();
+					}
+				}
+				else
+				{
+					spermAimCounter += spermAimSpeed;
+					if (spermAimCounter >= spermAimRange)
+					{
+						spermAimSpeed = Math.abs(spermAimSpeed) * -1;
+					}
+					else if (spermAimCounter <= 0)
+					{
+						spermAimSpeed = Math.abs(spermAimSpeed)
+					}
+					
+					if ((space) && (sperm_speed == 0))
+					{
+						sperm_direction = spermAimRangeStart - spermAimCounter;
+						sperm_speed = 3;
+					}
+				}
+				
+				drawTaskThree();
+				console.log("Task Three Loop");
 			}
 			
 			function taskTwo()
@@ -573,12 +717,16 @@
 						{
 							calciumPoints[i] = -1;
 							tailSpeed -= 0.75;
+							if (tailSpeed <= 0)
+							{
+								tailSpeed = 0.5;
+							}
 							calciumCollected++;
 						}
 					}
 					else if (calciumPoints[i] == -2)
 					{
-						if (Math.abs(sperm_x + sperm_hitbox_x - topPoints[i].x) < sperm_hitbox_radius)
+						if (Math.abs(sperm_x + sperm_hitbox_x - topPoints[i].x) < sperm_hitbox_radius + 75)
 						{
 							gotEgg = true;
 							completeTask();
@@ -778,6 +926,72 @@
 						ctx.drawImage(egg_image, topPoints[i].x, centerHeight - egg_image_height*egg_scale/2, egg_image_width*egg_scale, egg_image_height*egg_scale);
 					}
 				}
+				
+				if (gotEgg)
+				{
+					ctx.textAlign = "center";
+					ctx.fillStyle = black;
+					ctx.font = "30px Impact";
+					ctx.fillText("Task Complete!", 320, 200);
+				}
+			}
+			
+			function drawTaskThree()
+			{
+				drawTaskOne();
+				
+				ctx.drawImage(
+					egg_zp3_image, 
+					egg_x, egg_y, 
+					egg_zp3_image_width*egg_zp3_scale, 
+					egg_zp3_image_height*egg_zp3_scale
+				);
+				
+				if (sperm_speed == 0)
+				{
+					var spermAimAngle = spermAimRangeStart - spermAimCounter;
+					
+					var aim_start_x = Math.cos(spermAimAngle * Math.PI / 180) * aimStartDistance + sperm_x + sperm_hitbox_x;
+					var aim_start_y = Math.sin(spermAimAngle * Math.PI / 180) * aimStartDistance + sperm_y + sperm_hitbox_y;
+					
+					var aim_end_x = Math.cos(spermAimAngle * Math.PI / 180) * aimEndDistance + sperm_x + sperm_hitbox_x;
+					var aim_end_y =Math.sin(spermAimAngle * Math.PI / 180) * aimEndDistance + sperm_y + sperm_hitbox_y;
+					
+					ctx.strokeStyle = darkPink;
+					ctx.lineWidth = 5;
+					ctx.lineCap = 'round';
+					ctx.beginPath();
+					ctx.moveTo(aim_start_x, aim_start_y);
+					ctx.lineTo(aim_end_x, aim_end_y);
+					
+					ctx.stroke();
+					
+					ctx.beginPath();
+					ctx.arc(
+						sperm_x + sperm_hitbox_x,
+						sperm_y + sperm_hitbox_y,
+						aimStartDistance,
+						(spermAimAngle - 45) * Math.PI / 180,
+						(spermAimAngle + 45) * Math.PI / 180
+					);
+					
+					ctx.stroke();
+					
+					ctx.lineWidth = 1;
+				}
+				
+				/*for (let i = 0; i < zpPoints.length; i++)
+				{
+					ctx.fillStyle = black;
+					ctx.beginPath();
+					ctx.arc(
+						zpPoints[i].x,
+						zpPoints[i].y,
+						zpRadius,
+						0, 2*Math.PI
+					);
+					ctx.fill();
+				}*/
 				
 				if (gotEgg)
 				{
