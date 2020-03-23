@@ -49,19 +49,24 @@
 			var tasks = 
 			[
 				{
-					header: "Find the Fallopian Tube",
+					header: "Finding the Fallopian Tube",
 					description: "Educational description goes here.",
 					instructions: "Tap the space bar to hop all the way to the fallopian tube!"
 				},
 				{
-					header: "Collect Calcium",
+					header: "Collecting Calcium",
 					description: "Educational description goes here.",
 					instructions: "Tap the space bar to collect calcium on the way to the egg!"
 				},
 				{
-					header: "ZP3 Binding",
+					header: "Arriving at the Egg",
 					description: "Educational description goes here.",
-					instructions: "Tap the space bar at the perfect moment to bind to ZP3."
+					instructions: "Tap the space bar at the perfect moment to attach to ZP3 on the outside of the egg."
+				},
+				{
+					header: "Binding to ZP3",
+					description: "Educational description goes here.",
+					instructions: "Tap the space bar at the right time to bind to ZP3 and penetrate the first layer of the egg."
 				}
 			];
 			
@@ -69,7 +74,8 @@
 			[
 				taskOne,
 				taskTwo,
-				taskThree
+				taskThree,
+				taskFour
 			];
 			
 			var taskSetUp = [];
@@ -141,7 +147,7 @@
 						{
 							arrowPressed("Right");
 						}
-						else if (e.code === "Space") //A
+						else if (e.code === "Space")
 						{
 							spacePressed();
 						}
@@ -166,7 +172,7 @@
 						{
 							arrowReleased("Right");
 						}
-						else if (e.code === "Space") //A
+						else if (e.code === "Space")
 						{
 							spaceReleased();
 						}
@@ -267,7 +273,10 @@
 			function spaceReleased()
 			{
 				console.log("Released Space!");
-				space = false;
+				if (taskIndex != 3)
+				{
+					space = false;
+				}
 			}
 			
 			//Task Constants
@@ -321,6 +330,18 @@
 			var egg_zp3_image_height = 1113;
 			var egg_zp3_image_width = 1146;
 			
+			var egg_no_zp3_image = new Image();
+			egg_no_zp3_image.src = 'egg_no_zp3.png';
+			
+			var egg_no_zp3_image_height = 1113;
+			var egg_no_zp3_image_width = 1146;
+			
+			var puff_image = new Image();
+			puff_image.src = 'puff.png';
+			
+			puff_image_height = 106;
+			puff_image_width = 78;
+			
 			var maxDistFromCenter_calcium = minDistFromCenter_fallopianTube - 15;
 			var calcium_radius = 23;
 			
@@ -339,6 +360,14 @@
 			
 			var aimStartDistance = 20;
 			var aimEndDistance = 60;
+			
+			var gh_line_X = 100;
+			var gh_line_Y1 = 70;
+			var gh_line_Y2 = 410;
+			
+			var zpRadius = 10;
+			
+			var gh_radius = 10;
 			
 			//Task Setup Variables
 			var topPoints;
@@ -372,7 +401,16 @@
 			var spermAimCounter;
 			
 			var zpPoints;
-			var zpRadius = 10;
+			
+			var gh_cursorSpeed;
+			var gh_cursorSpeedDefault;
+			var gh_cursorPosition;
+			var gh_successfulHit;
+			var gh_nextHitIndex;
+			var gh_messageText;
+			
+			var puff_size;
+			var puff_size_modifier;
 			
 			function setupTaskOne()
 			{
@@ -438,7 +476,7 @@
 			
 			function setupTaskThree()
 			{
-				console.log("Setting up Task Two");
+				console.log("Setting up Task Three");
 				taskSetUp[taskIndex] = true;
 				
 				sperm_x = distanceBetweenPoints;
@@ -477,11 +515,60 @@
 				gotEgg = false; //repurposing this for ZP3
 			}
 			
+			function setupTaskFour()
+			{
+				console.log("Setting up Task Four");
+				taskSetUp[taskIndex] = true;
+				
+				sperm_x = 177;
+				sperm_y = centerHeight - 20;
+				sperm_speed = 0;
+				
+				topPoints = [];
+				bottomPoints = [];
+				pointsGenerated = 0;
+				peaksGenerated = 0;
+				
+				tailSpeed = 2.5;
+				tailMoveCounter = 0;
+				tailImageIndex = 1;
+				
+				sperm_speed = 0;
+				sperm_direction = 0;
+				
+				puff_size = 0;
+				puff_size_modifier = 0;
+				
+				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
+				{
+					addPoints(i);
+				}
+				
+				zpPoints = []; //repurposing for gh_timing
+				
+				var totalDistance = gh_line_Y2 - gh_line_Y1;
+				var numPoints = 4;
+				var distanceBetweenPoints = totalDistance/(numPoints-1);
+				for (let i = 0; i < numPoints; i++)
+				{
+					zpPoints.push(i*distanceBetweenPoints);
+				}
+				
+				gh_cursorSpeed = 0;
+				gh_cursorSpeedDefault = 2;
+				gh_cursorPosition = gh_line_Y1;
+				
+				gh_successfulHit = false;
+				gh_nextHitIndex = 1;
+				gh_messageText = "";
+				space = false;
+			}
+			
 			function addPoints(xCoordinate)
 			{
 				if (pointsGenerated == 0)
 				{
-					if (taskIndex == 2)
+					if (taskIndex > 1)
 					{
 						mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter_taskThree - Math.floor((Math.random() * (maxDistFromCenter_taskThree - minDistFromCenter_taskThree)));
 						
@@ -530,6 +617,95 @@
 				bottomPoints.push(
 					{x: xCoordinate, y: mostRecentGeneratedBottomHeight}
 				);
+			}
+			
+			function taskFour()
+			{
+				if (taskSetUp[taskIndex] == false)
+				{
+					setupTaskFour();
+				}
+				
+				tailMoveCounter++;
+				if (tailMoveCounter > tailSpeed)
+				{
+					tailMoveCounter = 0;
+					tailImageIndex++;
+					if (tailImageIndex == 3)
+					{
+						tailImageIndex = 1;
+					}
+				}
+				
+				puff_size += puff_size_modifier;
+				gh_cursorPosition += gh_cursorSpeed;
+				
+				if (gh_cursorPosition >= gh_line_Y2)
+				{
+					if (gh_messageText == "Too Early")
+					{
+						showGame();
+					}
+					else
+					{
+						gh_cursorSpeed = 0;
+						gh_cursorSpeedDefault = 0;
+						gh_cursorPosition = gh_line_Y2;
+						gh_messageText = "Task Complete";
+						completeTask();
+					}
+				}
+				else if (gh_cursorPosition > gh_line_Y1 + zpPoints[gh_nextHitIndex] + gh_radius)
+				{
+					if (gh_messageText == "Too Early!")
+					{
+						showGame();
+					}
+					else
+					{
+						gh_messageText = "Too Late!";
+						
+						if (gh_cursorPosition > gh_line_Y1 + zpPoints[gh_nextHitIndex] + gh_radius*5)
+						{
+							showGame();
+						}
+					}
+				}
+				else if (space)
+				{
+					if (gh_cursorSpeed == 0)
+					{
+						gh_cursorSpeed = gh_cursorSpeedDefault;
+					}
+					else if (gh_cursorPosition < gh_line_Y1 + zpPoints[gh_nextHitIndex] - gh_radius)
+					{
+						gh_messageText = "Too Early!";
+					}
+					else if ((gh_messageText != "Too Early!")
+					&& (Math.abs(gh_line_Y1 + zpPoints[gh_nextHitIndex] - gh_cursorPosition) <= gh_radius))
+					{
+						gh_messageText = "Good Timing!";
+						gh_nextHitIndex++;
+						if (puff_size_modifier == 0)
+						{
+							puff_size_modifier = 0.05;
+						}
+						else if (sperm_speed == 0)
+						{
+							sperm_direction = 0;
+							sperm_speed = 1;
+						}
+					}
+				}
+				
+				if (sperm_speed > 0)
+				{
+					sperm_x += sperm_speed;
+				}
+				
+				space = false;
+				drawTaskFour();
+				console.log("Task Three Loop");
 			}
 			
 			function taskThree()
@@ -864,15 +1040,18 @@
 				}
 				ctx.stroke();
 				
-				if (tailImageIndex == 1)
+				if (taskIndex != 3)
 				{
-					ctx.drawImage(sperm_image, sperm_x, sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
-				}
-				else
-				{
-					var upsidedown_sperm_y = sperm_y + sperm_image_height*sperm_scale - sperm_hitbox_y;
-					
-					ctx.drawImage(sperm2_image, sperm_x, upsidedown_sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
+					if (tailImageIndex == 1)
+					{
+						ctx.drawImage(sperm_image, sperm_x, sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
+					}
+					else
+					{
+						var upsidedown_sperm_y = sperm_y + sperm_image_height*sperm_scale - sperm_hitbox_y;
+						
+						ctx.drawImage(sperm2_image, sperm_x, upsidedown_sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
+					}
 				}
 				
 				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 0))
@@ -980,25 +1159,102 @@
 					ctx.lineWidth = 1;
 				}
 				
-				/*for (let i = 0; i < zpPoints.length; i++)
-				{
-					ctx.fillStyle = black;
-					ctx.beginPath();
-					ctx.arc(
-						zpPoints[i].x,
-						zpPoints[i].y,
-						zpRadius,
-						0, 2*Math.PI
-					);
-					ctx.fill();
-				}*/
-				
 				if (gotEgg)
 				{
 					ctx.textAlign = "center";
 					ctx.fillStyle = black;
 					ctx.font = "30px Impact";
 					ctx.fillText("Task Complete!", 320, 200);
+				}
+			}
+			
+			function drawTaskFour()
+			{
+				drawTaskOne();
+				
+				if (puff_size <= 1.5)
+				{
+					ctx.drawImage(
+						egg_zp3_image, 
+						egg_x, egg_y, 
+						egg_zp3_image_width*egg_zp3_scale, 
+						egg_zp3_image_height*egg_zp3_scale
+					);
+					
+					ctx.drawImage(
+						puff_image, 
+						egg_x + puff_image_width*egg_zp3_scale/2*(1-puff_size), 
+						egg_y + 170 + puff_image_height*egg_zp3_scale/2*(1-puff_size), 
+						puff_image_width*egg_zp3_scale*puff_size, 
+						puff_image_height*egg_zp3_scale*puff_size
+					);
+				}
+				else
+				{
+					ctx.drawImage(
+						egg_no_zp3_image, 
+						egg_x, egg_y, 
+						egg_zp3_image_width*egg_zp3_scale, 
+						egg_zp3_image_height*egg_zp3_scale
+					);
+				}
+				
+				ctx.strokeStyle = darkPink;
+				ctx.lineWidth = 5;
+				ctx.lineCap = 'round';
+				
+				ctx.beginPath();
+				ctx.moveTo(gh_line_X, gh_line_Y1);
+				ctx.lineTo(gh_line_X, gh_line_Y2);
+				
+				for (let i =  0; i < zpPoints.length; i++)
+				{
+					ctx.moveTo(gh_line_X - 10, gh_line_Y1 + zpPoints[i]);
+					ctx.lineTo(gh_line_X + 10, gh_line_Y1 + zpPoints[i]);
+				}
+				ctx.stroke();
+				
+				ctx.beginPath();
+				ctx.arc(gh_line_X, gh_cursorPosition, gh_radius, 0, Math.PI*2);
+				ctx.stroke();
+				
+				ctx.lineWidth = 1;
+				
+				ctx.textAlign = "center";
+				ctx.fillStyle = black;
+				ctx.font = "30px Impact";
+				ctx.fillText(gh_messageText, gh_line_X, gh_line_Y1 - 15);
+				
+				ctx.fillStyle = lightPink;
+				ctx.beginPath();
+				ctx.moveTo(
+					Math.min(sperm_x + sperm_hitbox_x + sperm_hitbox_radius, egg_x + 40),
+					sperm_y + sperm_hitbox_y - sperm_hitbox_radius
+				);
+				ctx.lineTo(
+					Math.min(sperm_x + sperm_hitbox_x + sperm_hitbox_radius, egg_x + 40),
+					sperm_y + sperm_hitbox_y + sperm_hitbox_radius
+				);
+				ctx.lineTo(
+					sperm_x + sperm_hitbox_radius,
+					sperm_y + sperm_hitbox_y + sperm_hitbox_radius + 10
+				);
+				ctx.lineTo(
+					sperm_x + sperm_hitbox_radius,
+					sperm_y + sperm_hitbox_y - sperm_hitbox_radius - 10
+				);
+				ctx.closePath();
+				ctx.fill();
+				
+				if (tailImageIndex == 1)
+				{
+					ctx.drawImage(sperm_image, sperm_x, sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
+				}
+				else
+				{
+					var upsidedown_sperm_y = sperm_y + sperm_image_height*sperm_scale - sperm_hitbox_y;
+					
+					ctx.drawImage(sperm2_image, sperm_x, upsidedown_sperm_y, sperm_image_width*sperm_scale, sperm_image_height*sperm_scale);
 				}
 			}
 			
