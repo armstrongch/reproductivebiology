@@ -555,7 +555,7 @@
 				}
 				
 				gh_cursorSpeed = 0;
-				gh_cursorSpeedDefault = 2;
+				gh_cursorSpeedDefault = 3;
 				gh_cursorPosition = gh_line_Y1;
 				
 				gh_successfulHit = false;
@@ -644,8 +644,7 @@
 				{
 					gh_cursorSpeed = gh_cursorSpeedDefault;
 				}
-				
-				if (gh_cursorPosition >= gh_line_Y2)
+				else if (gh_cursorPosition >= gh_line_Y2)
 				{
 					gh_cursorSpeed = 0;
 					gh_cursorSpeedDefault = 0;
@@ -653,7 +652,7 @@
 					gh_messageText = "Task Complete";
 					completeTask();
 				}
-				else if ((Math.abs(gh_line_Y1 + zpPoints[gh_nextHitIndex] - gh_cursorPosition) <= gh_radius))
+				else if (((Math.abs(gh_line_Y1 + zpPoints[gh_nextHitIndex] - gh_cursorPosition) <= gh_radius)) && (gh_cursorSpeed > 0))
 				{
 					gh_nextHitIndex++;
 					if (puff_size_modifier == 0)
