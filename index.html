@@ -66,7 +66,7 @@
 				{
 					header: "Binding to ZP3",
 					description: "Educational description goes here.",
-					instructions: "Tap the space bar at the right time to bind to ZP3 and penetrate the first layer of the egg."
+					instructions: "Tap the space bar to bind to ZP3 and penetrate the first layer of the egg."
 				}
 			];
 			
@@ -547,11 +547,11 @@
 				zpPoints = []; //repurposing for gh_timing
 				
 				var totalDistance = gh_line_Y2 - gh_line_Y1;
-				var numPoints = 4;
-				var distanceBetweenPoints = totalDistance/(numPoints-1);
+				var numPoints = 3;
+				var distanceBetweenPoints_zp = totalDistance/(numPoints-1);
 				for (let i = 0; i < numPoints; i++)
 				{
-					zpPoints.push(i*distanceBetweenPoints);
+					zpPoints.push(i*distanceBetweenPoints_zp);
 				}
 				
 				gh_cursorSpeed = 0;
@@ -559,7 +559,7 @@
 				gh_cursorPosition = gh_line_Y1;
 				
 				gh_successfulHit = false;
-				gh_nextHitIndex = 1;
+				gh_nextHitIndex = 0;
 				gh_messageText = "";
 				space = false;
 			}
@@ -640,61 +640,30 @@
 				puff_size += puff_size_modifier;
 				gh_cursorPosition += gh_cursorSpeed;
 				
+				if ((space) && (gh_cursorSpeed == 0))
+				{
+					gh_cursorSpeed = gh_cursorSpeedDefault;
+				}
+				
 				if (gh_cursorPosition >= gh_line_Y2)
 				{
-					if (gh_messageText == "Too Early")
-					{
-						showGame();
-					}
-					else
-					{
-						gh_cursorSpeed = 0;
-						gh_cursorSpeedDefault = 0;
-						gh_cursorPosition = gh_line_Y2;
-						gh_messageText = "Task Complete";
-						completeTask();
-					}
+					gh_cursorSpeed = 0;
+					gh_cursorSpeedDefault = 0;
+					gh_cursorPosition = gh_line_Y2;
+					gh_messageText = "Task Complete";
+					completeTask();
 				}
-				else if (gh_cursorPosition > gh_line_Y1 + zpPoints[gh_nextHitIndex] + gh_radius)
+				else if ((Math.abs(gh_line_Y1 + zpPoints[gh_nextHitIndex] - gh_cursorPosition) <= gh_radius))
 				{
-					if (gh_messageText == "Too Early!")
+					gh_nextHitIndex++;
+					if (puff_size_modifier == 0)
 					{
-						showGame();
+						puff_size_modifier = 0.05;
 					}
-					else
+					else if (sperm_speed == 0)
 					{
-						gh_messageText = "Too Late!";
-						
-						if (gh_cursorPosition > gh_line_Y1 + zpPoints[gh_nextHitIndex] + gh_radius*5)
-						{
-							showGame();
-						}
-					}
-				}
-				else if (space)
-				{
-					if (gh_cursorSpeed == 0)
-					{
-						gh_cursorSpeed = gh_cursorSpeedDefault;
-					}
-					else if (gh_cursorPosition < gh_line_Y1 + zpPoints[gh_nextHitIndex] - gh_radius)
-					{
-						gh_messageText = "Too Early!";
-					}
-					else if ((gh_messageText != "Too Early!")
-					&& (Math.abs(gh_line_Y1 + zpPoints[gh_nextHitIndex] - gh_cursorPosition) <= gh_radius))
-					{
-						gh_messageText = "Good Timing!";
-						gh_nextHitIndex++;
-						if (puff_size_modifier == 0)
-						{
-							puff_size_modifier = 0.05;
-						}
-						else if (sperm_speed == 0)
-						{
-							sperm_direction = 0;
-							sperm_speed = 1;
-						}
+						sperm_direction = 0;
+						sperm_speed = 0.75;
 					}
 				}
 				
@@ -1199,7 +1168,7 @@
 					);
 				}
 				
-				ctx.strokeStyle = darkPink;
+				/*ctx.strokeStyle = darkPink;
 				ctx.lineWidth = 5;
 				ctx.lineCap = 'round';
 				
@@ -1218,12 +1187,12 @@
 				ctx.arc(gh_line_X, gh_cursorPosition, gh_radius, 0, Math.PI*2);
 				ctx.stroke();
 				
-				ctx.lineWidth = 1;
+				ctx.lineWidth = 1;*/
 				
 				ctx.textAlign = "center";
 				ctx.fillStyle = black;
 				ctx.font = "30px Impact";
-				ctx.fillText(gh_messageText, gh_line_X, gh_line_Y1 - 15);
+				ctx.fillText(gh_messageText, 320, 200);
 				
 				ctx.fillStyle = lightPink;
 				ctx.beginPath();
