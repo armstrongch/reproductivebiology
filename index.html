@@ -741,7 +741,7 @@
 				if (colorIndex != -1)
 				{
 					colorIndex++;
-					if (colorIndex >= 24)
+					if (colorIndex >= 30)
 					{
 						gh_messageText = "Task Complete";
 						completeTask();
@@ -1401,8 +1401,12 @@
 							second_egg_to_draw = egg_purple_image;
 							break;
 						case 5:
-							first_egg_to_draw = egg_purple;
-							second_egg_to_draw = egg_red;
+							first_egg_to_draw = egg_purple_image;
+							second_egg_to_draw = egg_image;
+							break;
+						case 6:
+							first_egg_to_draw = egg_image;
+							second_egg_to_draw = egg_image;
 							break;
 					}
 				}
