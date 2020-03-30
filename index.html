@@ -31,7 +31,7 @@
 			<h2 id="instructions"><h2>
 			<h2>Press Space to Begin!</h2>
 		</div>
-		<canvas id="gameCanvas" width="0" height="0"></canvas>
+		<canvas id="gameCanvas" width="0" height="0" onclick="canvasClick(event)"></canvas>
 		<div id="buttonDiv">
 			<button id="previousButton" onclick="previousTask()"><h3>Previous Task</h3></button>
 			<button id="nextButton" onclick="nextTask()"><h3>Next Task</h3></button>
@@ -67,6 +67,11 @@
 					header: "Binding to ZP3",
 					description: "Educational description goes here.",
 					instructions: "Tap the space bar to bind to ZP3 and penetrate the first layer of the egg."
+				},
+				{
+					header: "Releasing the Nucleus",
+					description: "Educational description goes here.",
+					instructions: "Tap the space bar to fuse to the egg, then click the PLCzeta to releasee a calcium wave."
 				}
 			];
 			
@@ -75,7 +80,8 @@
 				taskOne,
 				taskTwo,
 				taskThree,
-				taskFour
+				taskFour,
+				taskFive
 			];
 			
 			var taskSetUp = [];
@@ -93,6 +99,27 @@
 				mode = "info";
 				setupButtons();
 				clearInterval(gameInterval);
+			}
+			
+			function canvasClick()
+			{
+				if ((mode == "game") 
+				&& (taskIndex == 4) 
+				&& (sperm_speed > 0)
+				&& (colorIndex = -1))
+				{
+					var rect = gameCanvas.getBoundingClientRect();
+					var mouseX = event.clientX - rect.left;
+					var mouseY = event.clientY - rect.top;
+					
+					if ((mouseX >= egg_x + 60) 
+					&& (mouseX <= egg_x + 60 + PLCZ_image_width/2)
+					&& (mouseY >= egg_y + 225) 
+					&& (mouseY <= egg_y + 225 + PLCZ_image_height/2))
+					{
+						colorIndex = 1;
+					}
+				}
 			}
 			
 			function showGame()
@@ -273,7 +300,7 @@
 			function spaceReleased()
 			{
 				console.log("Released Space!");
-				if (taskIndex != 3)
+				if ((taskIndex != 3) && (taskIndex != 4))
 				{
 					space = false;
 				}
@@ -312,9 +339,15 @@
 			var sperm2_image = new Image();
 			sperm2_image.src = 'sperm2.png';
 			
+			var sperm_tan_image = new Image();
+			sperm_tan_image.src = 'sperm_tan_small.png';
+			
 			var sperm_image_height = 93;
 			var sperm_image_width = 367;
 			var sperm_scale = 1/3;
+			
+			var sperm_tan_image_height = 53;
+			var sperm_tan_image_width = 176;
 			
 			var egg_image = new Image();
 			egg_image.src = 'egg.png';
@@ -341,6 +374,31 @@
 			
 			puff_image_height = 106;
 			puff_image_width = 78;
+			
+			var sperm_nucleus_image = new Image();
+			sperm_nucleus_image.src = 'sperm_nucleus.png';
+			
+			var sperm_nucleus_image_height = 77;
+			var sperm_nucleus_image_width = 77;
+			
+			var PLCZ_image = new Image();
+			PLCZ_image.src = 'PLCZ.png';
+			
+			var PLCZ_image_height = 71;
+			var PLCZ_image_width = 125;
+			
+			var egg_red_image = new Image();
+			egg_red_image.src = 'egg_red.png';
+			var egg_orange_image = new Image();
+			egg_orange_image.src = 'egg_orange.png';
+			var egg_yellow_image = new Image();
+			egg_yellow_image.src = 'egg_yellow.png';
+			var egg_green_image = new Image();
+			egg_green_image.src = 'egg_green.png';
+			var egg_blue_image = new Image();
+			egg_blue_image.src = 'egg_blue.png';
+			var egg_purple_image = new Image();
+			egg_purple_image.src = 'egg_purple.png';
 			
 			var maxDistFromCenter_calcium = minDistFromCenter_fallopianTube - 15;
 			var calcium_radius = 23;
@@ -385,6 +443,11 @@
 			var sperm_speed;
 			var sperm_direction;
 			
+			var sperm_x_offset;
+			
+			var sperm_box_x;
+			var sperm_box_y;
+			
 			var dangerPointIndex;
 			var dangerPoint;
 			
@@ -411,6 +474,10 @@
 			
 			var puff_size;
 			var puff_size_modifier;
+			
+			var plcz_alpha;
+			
+			var colorIndex;
 			
 			function setupTaskOne()
 			{
@@ -498,7 +565,6 @@
 				spermAimCounter = 0;
 				
 				sperm_speed = 0;
-				sperm_direction = 0;
 				
 				zpPoints = [];
 				
@@ -564,6 +630,36 @@
 				space = false;
 			}
 			
+			function setupTaskFive()
+			{
+				console.log("Setting up Task Four");
+				taskSetUp[taskIndex] = true;
+				space = false;
+				
+				sperm_x = 211;
+				sperm_y = centerHeight - 20;
+				sperm_speed = 0;
+				sperm_x_offset = 0;
+				
+				sperm_box_x = sperm_x - 3;
+				sperm_box_y = sperm_y + 2;
+				
+				topPoints = [];
+				bottomPoints = [];
+				pointsGenerated = 0;
+				peaksGenerated = 0;
+				colorIndex = -1;
+				
+				gh_messageText = "";
+				
+				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
+				{
+					addPoints(i);
+				}
+				
+				plcz_alpha = 0;
+			}
+			
 			function addPoints(xCoordinate)
 			{
 				if (pointsGenerated == 0)
@@ -619,6 +715,44 @@
 				);
 			}
 			
+			function taskFive()
+			{
+				if (taskSetUp[taskIndex] == false)
+				{
+					setupTaskFive();
+				}
+				
+				if (space)
+				{
+					sperm_speed = 4;
+				}
+				
+				sperm_x_offset += sperm_speed;
+				sperm_x += sperm_speed;
+				sperm_box_x += sperm_speed;
+				if (plcz_alpha < 1)
+				{
+					plcz_alpha += sperm_speed / 175;
+				}
+				else if (plcz_alpha > 1)
+				{
+					plcz_alpha = 1;
+				}
+				if (colorIndex != -1)
+				{
+					colorIndex++;
+					if (colorIndex >= 24)
+					{
+						gh_messageText = "Task Complete";
+						completeTask();
+					}
+				}
+				
+				space = false;
+				drawTaskFive();
+				console.log("Task Five Loop");
+			}
+			
 			function taskFour()
 			{
 				if (taskSetUp[taskIndex] == false)
@@ -661,7 +795,6 @@
 					}
 					else if (sperm_speed == 0)
 					{
-						sperm_direction = 0;
 						sperm_speed = 0.75;
 					}
 				}
@@ -673,7 +806,7 @@
 				
 				space = false;
 				drawTaskFour();
-				console.log("Task Three Loop");
+				console.log("Task Four Loop");
 			}
 			
 			function taskThree()
@@ -1008,7 +1141,7 @@
 				}
 				ctx.stroke();
 				
-				if (taskIndex != 3)
+				if (taskIndex < 3)
 				{
 					if (tailImageIndex == 1)
 					{
@@ -1226,6 +1359,127 @@
 				}
 			}
 			
+			function drawTaskFive()
+			{
+				drawTaskOne();
+				
+				var first_egg_to_draw = egg_image;
+				var second_egg_to_draw = egg_image;
+				var first_opacity = 1;
+				var second_opacity = 0;
+				
+				if (colorIndex != -1)
+				{
+					var firstColorIndex = Math.floor(colorIndex/5);
+					var secondColorIndex = firstColorIndex + 1;
+					var percentDone = colorIndex % 5;
+					
+					
+					second_opacity = percentDone/5;
+					first_opacity = 1 - second_opacity;
+					
+					switch(firstColorIndex)
+					{
+						case 0:
+							first_egg_to_draw = egg_red_image;
+							second_egg_to_draw = egg_orange_image;
+							break;
+						case 1:
+							first_egg_to_draw = egg_orange_image;
+							second_egg_to_draw = egg_yellow_image;
+							break;
+						case 2:
+							first_egg_to_draw = egg_yellow_image;
+							second_egg_to_draw = egg_green_image;
+							break;
+						case 3:
+							first_egg_to_draw = egg_green_image;
+							second_egg_to_draw = egg_blue_image;
+							break;
+						case 4:
+							first_egg_to_draw = egg_blue_image;
+							second_egg_to_draw = egg_purple_image;
+							break;
+						case 5:
+							first_egg_to_draw = egg_purple;
+							second_egg_to_draw = egg_red;
+							break;
+					}
+				}
+				
+				ctx.globalAlpha = first_opacity;
+				ctx.drawImage(
+					first_egg_to_draw, 
+					egg_x, egg_y, 
+					egg_zp3_image_width*egg_zp3_scale, 
+					egg_zp3_image_height*egg_zp3_scale
+				);
+				
+				ctx.globalAlpha = second_opacity;
+				ctx.drawImage(
+					second_egg_to_draw, 
+					egg_x, egg_y, 
+					egg_zp3_image_width*egg_zp3_scale, 
+					egg_zp3_image_height*egg_zp3_scale
+				);
+				ctx.globalAlpha = 1;
+				
+				
+				if (sperm_x_offset < sperm_tan_image_width*2/3)
+				{
+					ctx.fillStyle = lightPink;
+					ctx.beginPath();
+					ctx.moveTo(
+						egg_x + 28,
+						sperm_box_y + sperm_hitbox_y - sperm_hitbox_radius
+					);
+					ctx.lineTo(
+						egg_x + 28,
+						sperm_box_y + sperm_hitbox_y + sperm_hitbox_radius
+					);
+					ctx.lineTo(
+						Math.min(sperm_box_x + sperm_hitbox_radius, egg_x + 27),
+						sperm_box_y + sperm_hitbox_y - 3
+					);
+					ctx.lineTo(
+						Math.min(sperm_box_x + sperm_hitbox_radius, egg_x + 27),
+						sperm_box_y + sperm_hitbox_y - 3
+					);
+					ctx.closePath();
+					ctx.fill();
+					
+					ctx.drawImage(
+						sperm_tan_image, //image
+						0, 0, //xClip, yClip
+						sperm_tan_image_width - sperm_x_offset, sperm_tan_image_height, //xSize, ySize
+						sperm_x, sperm_y, //xPos, yPos
+						sperm_tan_image_width*2/3 - sperm_x_offset, sperm_tan_image_height*2/3 //xWidth, yWidth
+					);
+				}
+				
+				ctx.globalAlpha = plcz_alpha;
+				
+				ctx.drawImage(
+					sperm_nucleus_image, 
+					egg_x + 40, egg_y + 175, 
+					sperm_nucleus_image_width/2, 
+					sperm_nucleus_image_height/2
+				);
+				
+				ctx.drawImage(
+					PLCZ_image, 
+					egg_x + 60, egg_y + 225, 
+					PLCZ_image_width/2, 
+					PLCZ_image_height/2
+				);
+				
+				ctx.globalAlpha = 1;
+				
+				ctx.textAlign = "center";
+				ctx.fillStyle = black;
+				ctx.font = "30px Impact";
+				ctx.fillText(gh_messageText, 320, 200);
+			}
 		</script>
 	</body>
 </html>
