@@ -106,7 +106,8 @@
 				if ((mode == "game") 
 				&& (taskIndex == 4) 
 				&& (sperm_speed > 0)
-				&& (colorIndex = -1))
+				&& (colorIndex == -1)
+				&& (plcz_alpha > 0.5))
 				{
 					var rect = gameCanvas.getBoundingClientRect();
 					var mouseX = event.clientX - rect.left;
@@ -1451,13 +1452,15 @@
 					);
 					ctx.closePath();
 					ctx.fill();
-					
+				
+					ctx.globalAlpha = 1 - plcz_alpha;
+				
 					ctx.drawImage(
 						sperm_tan_image, //image
 						0, 0, //xClip, yClip
-						sperm_tan_image_width - sperm_x_offset, sperm_tan_image_height, //xSize, ySize
-						sperm_x, sperm_y, //xPos, yPos
-						sperm_tan_image_width*2/3 - sperm_x_offset, sperm_tan_image_height*2/3 //xWidth, yWidth
+						sperm_tan_image_width, sperm_tan_image_height, //xSize, ySize
+						211, sperm_y, //xPos, yPos
+						sperm_tan_image_width*2/3, sperm_tan_image_height*2/3 //xWidth, yWidth
 					);
 				}
 				
@@ -1470,12 +1473,15 @@
 					sperm_nucleus_image_height/2
 				);
 				
-				ctx.drawImage(
-					PLCZ_image, 
-					egg_x + 60, egg_y + 225, 
-					PLCZ_image_width/2, 
-					PLCZ_image_height/2
-				);
+				if (colorIndex == -1)
+				{
+					ctx.drawImage(
+						PLCZ_image, 
+						egg_x + 60, egg_y + 225, 
+						PLCZ_image_width/2, 
+						PLCZ_image_height/2
+					);
+				}
 				
 				ctx.globalAlpha = 1;
 				
