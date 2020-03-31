@@ -72,6 +72,11 @@
 					header: "Releasing the Nucleus",
 					description: "Educational description goes here.",
 					instructions: "Tap the space bar to fuse to the egg, then click the PLCzeta to release a calcium wave."
+				},
+				{
+					header: "Fusing Corticle Granules with the Egg",
+					description: "Educational description goes here.",
+					instructions: "Click the corticle granules to fuse them with the egg."
 				}
 			];
 			
@@ -81,7 +86,8 @@
 				taskTwo,
 				taskThree,
 				taskFour,
-				taskFive
+				taskFive,
+				taskSix
 			];
 			
 			var taskSetUp = [];
@@ -119,6 +125,23 @@
 					&& (mouseY <= egg_y + 225 + PLCZ_image_height/2))
 					{
 						colorIndex = 1;
+					}
+				}
+				else if ((mode == "game")
+				&& (taskIndex == 5))
+				{
+					var rect = gameCanvas.getBoundingClientRect();
+					var mouseX = event.clientX - rect.left;
+					var mouseY = event.clientY - rect.top;
+					
+					for (let i = 0; i < calciumPoints.length; i++)
+					{
+						if ((calciumPoints[i].speed == 0)
+						&& (Math.abs(mouseX - calciumPoints[i].x) < granule_image_width*granule_scale/2)
+						&& (Math.abs(mouseY - calciumPoints[i].y) < granule_image_height*granule_scale/2))
+						{
+							calciumPoints[i].speed = 8;
+						}
 					}
 				}
 			}
@@ -373,6 +396,9 @@
 			var puff_image = new Image();
 			puff_image.src = 'puff.png';
 			
+			var puff_brown_image = new Image();
+			puff_brown_image.src = 'puff_brown.png';
+			
 			puff_image_height = 106;
 			puff_image_width = 78;
 			
@@ -400,6 +426,14 @@
 			egg_blue_image.src = 'egg_blue.png';
 			var egg_purple_image = new Image();
 			egg_purple_image.src = 'egg_purple.png';
+			
+			var granule_image = new Image();
+			granule_image.src = 'granule.png';
+			
+			var granule_image_width = 32;
+			var granule_image_height = 32;
+			
+			var granule_scale = 1/2;
 			
 			var maxDistFromCenter_calcium = minDistFromCenter_fallopianTube - 15;
 			var calcium_radius = 23;
@@ -633,7 +667,7 @@
 			
 			function setupTaskFive()
 			{
-				console.log("Setting up Task Four");
+				console.log("Setting up Task Five");
 				taskSetUp[taskIndex] = true;
 				space = false;
 				
@@ -659,6 +693,55 @@
 				}
 				
 				plcz_alpha = 0;
+			}
+			
+			function setupTaskSix()
+			{
+				console.log("Setting up Task Six");
+				taskSetUp[taskIndex] = true;
+				
+				gh_messageText = "";
+				
+				topPoints = [];
+				bottomPoints = [];
+				pointsGenerated = 0;
+				peaksGenerated = 0;
+				
+				calciumPoints = []; //reusing this for granules
+				
+				calciumPoints.push(newCalciumPoint(70, 240));
+				calciumPoints.push(newCalciumPoint(65, 260));
+				calciumPoints.push(newCalciumPoint(90, 260));
+				calciumPoints.push(newCalciumPoint(80, 280));
+				calciumPoints.push(newCalciumPoint(105, 280));
+				calciumPoints.push(newCalciumPoint(95, 300));
+				calciumPoints.push(newCalciumPoint(115, 310));
+				calciumPoints.push(newCalciumPoint(125, 290));
+				calciumPoints.push(newCalciumPoint(140, 320));
+				calciumPoints.push(newCalciumPoint(155, 300));
+				calciumPoints.push(newCalciumPoint(165, 325));
+				
+				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
+				{
+					addPoints(i);
+				}
+				
+				colorIndex = 1; //reusing this for egg border radius
+			}
+			
+			function newCalciumPoint(xOffset, yOffset)
+			{
+				return {
+				x: egg_x + xOffset,
+				y: egg_y + yOffset,
+				speed: 0,
+				direction: angle(
+					egg_x + egg_image_width*egg_zp3_scale, 
+					egg_x + egg_image_width*egg_zp3_scale,
+					egg_x + xOffset, 
+					egg_y + yOffset),
+				imageToDraw: 'granule'
+				}
 			}
 			
 			function addPoints(xCoordinate)
@@ -714,6 +797,48 @@
 				bottomPoints.push(
 					{x: xCoordinate, y: mostRecentGeneratedBottomHeight}
 				);
+			}
+			
+			function taskSix()
+			{
+				if (taskSetUp[taskIndex] == false)
+				{
+					setupTaskSix();
+				}
+				
+				if (calciumPoints.length == 0)
+				{
+					gh_messageText = "Task Complete";
+					completeTask();
+				}
+				
+				for (let i = calciumPoints.length - 1; i >= 0; i--)
+				{
+					if (calciumPoints[i].speed > 0)
+					{
+						calciumPoints[i].x += Math.cos(calciumPoints[i].direction * Math.PI / 180);
+						calciumPoints[i].y -= Math.sin(calciumPoints[i].direction * Math.PI / 180);
+						
+						var xDif = egg_x + egg_image_width * egg_zp3_scale + 14 - calciumPoints[i].x;
+						var yDif = egg_y + egg_image_width * egg_zp3_scale + 9 - calciumPoints[i].y;
+						var distFromCenter = Math.sqrt(xDif*xDif + yDif*yDif);
+						
+						if (distFromCenter > egg_image_width * egg_zp3_scale)
+						{
+							calciumPoints.splice(i, 1);
+							colorIndex += 1;
+						}
+						else if ((distFromCenter > egg_image_width * egg_zp3_scale - 15) 
+						&& (calciumPoints[i].imageToDraw != 'puff'))
+						{
+							calciumPoints[i].imageToDraw = 'puff';
+							calciumPoints[i].speed = 5;
+						}
+					}
+				}
+				
+				drawTaskSix();
+				console.log("Task Six Loop");
 			}
 			
 			function taskFive()
@@ -1489,6 +1614,69 @@
 				ctx.fillStyle = black;
 				ctx.font = "30px Impact";
 				ctx.fillText(gh_messageText, 320, 200);
+			}
+			
+			function drawTaskSix()
+			{
+				drawTaskOne();
+				
+				ctx.drawImage(
+					egg_image, 
+					egg_x, egg_y, 
+					egg_zp3_image_width*egg_zp3_scale, 
+					egg_zp3_image_height*egg_zp3_scale
+				);
+				
+				for (let i = 0; i < calciumPoints.length; i++)
+				{
+					if (calciumPoints[i].imageToDraw == 'granule')
+					{
+						ctx.drawImage(
+							granule_image,
+							calciumPoints[i].x - granule_image_width*granule_scale/2,
+							calciumPoints[i].y - granule_image_height*granule_scale/2,
+							granule_image_height/2,
+							granule_image_height/2
+						);
+					}
+					else
+					{
+						ctx.drawImage(
+							puff_brown_image,
+							calciumPoints[i].x - puff_image_width*egg_zp3_scale/2,
+							calciumPoints[i].y - puff_image_height*egg_zp3_scale/2,
+							puff_image_width*egg_zp3_scale,
+							puff_image_height*egg_zp3_scale
+						);
+					}
+				}
+				
+				ctx.lineWidth = colorIndex;
+				ctx.strokeStyle = black;
+				ctx.beginPath();
+				ctx.arc(
+					egg_x + egg_image_width * egg_zp3_scale + 14,
+					egg_y + egg_image_width * egg_zp3_scale + 9,
+					egg_image_width * egg_zp3_scale + 11,
+					0, Math.PI*2
+				);
+				ctx.stroke();
+				ctx.lineWidth = 1;
+				
+				ctx.textAlign = "center";
+				ctx.fillStyle = black;
+				ctx.font = "30px Impact";
+				ctx.fillText(gh_messageText, 150, 200);
+			}
+			
+			//from: https://stackoverflow.com/questions/9614109/how-to-calculate-an-angle-from-points
+			function angle(cx, cy, ex, ey) {
+			  var dy = ey - cy;
+			  var dx = ex - cx;
+			  var theta = Math.atan2(dy, dx); // range (-PI, PI]
+			  theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
+			  //if (theta < 0) theta = 360 + theta; // range [0, 360)
+			  return theta;
 			}
 		</script>
 	</body>
