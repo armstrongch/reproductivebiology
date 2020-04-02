@@ -430,6 +430,9 @@
 			var granule_image = new Image();
 			granule_image.src = 'granule.png';
 			
+			var egg_sperm_nucleus_image = new Image();
+			egg_sperm_nucleus_image.src = 'egg_sperm_nucleus.png';
+			
 			var granule_image_width = 32;
 			var granule_image_height = 32;
 			
@@ -1528,11 +1531,11 @@
 							break;
 						case 5:
 							first_egg_to_draw = egg_purple_image;
-							second_egg_to_draw = egg_image;
+							second_egg_to_draw = egg_sperm_nucleus_image;
 							break;
 						case 6:
-							first_egg_to_draw = egg_image;
-							second_egg_to_draw = egg_image;
+							first_egg_to_draw = egg_sperm_nucleus_image;
+							second_egg_to_draw = egg_sperm_nucleus_image;
 							break;
 					}
 				}
@@ -1591,15 +1594,15 @@
 				
 				ctx.globalAlpha = plcz_alpha;
 				
-				ctx.drawImage(
-					sperm_nucleus_image, 
-					egg_x + 40, egg_y + 175, 
-					sperm_nucleus_image_width/2, 
-					sperm_nucleus_image_height/2
-				);
-				
 				if (colorIndex == -1)
 				{
+					ctx.drawImage(
+						sperm_nucleus_image, 
+						egg_x + 40, egg_y + 175, 
+						sperm_nucleus_image_width*egg_zp3_scale, 
+						sperm_nucleus_image_height*egg_zp3_scale
+					);
+					
 					ctx.drawImage(
 						PLCZ_image, 
 						egg_x + 60, egg_y + 225, 
@@ -1621,7 +1624,7 @@
 				drawTaskOne();
 				
 				ctx.drawImage(
-					egg_image, 
+					egg_sperm_nucleus_image,
 					egg_x, egg_y, 
 					egg_zp3_image_width*egg_zp3_scale, 
 					egg_zp3_image_height*egg_zp3_scale
