@@ -51,12 +51,12 @@
 				{
 					header: "Finding the Fallopian Tube",
 					description: "Educational description goes here.",
-					instructions: "Tap the space bar to hop all the way to the fallopian tube!"
+					instructions: "Tap the space bar to hop all the way to the fallopian tube."
 				},
 				{
 					header: "Collecting Calcium",
 					description: "Educational description goes here.",
-					instructions: "Tap the space bar to collect calcium on the way to the egg!"
+					instructions: "Tap the space bar to collect calcium on the way to the egg."
 				},
 				{
 					header: "Arriving at the Egg",
@@ -77,6 +77,11 @@
 					header: "Fusing Corticle Granules with the Egg",
 					description: "Educational description goes here.",
 					instructions: "Click the corticle granules to fuse them with the egg."
+				},
+				{
+					header: "Returning to the Uterus",
+					description: "Educational description goes here.",
+					instructions: "Press the space bar to guide the egg back down the fallopian tube to the uterus. Click the egg when prompted to increase the number of cells."
 				}
 			];
 			
@@ -87,7 +92,8 @@
 				taskThree,
 				taskFour,
 				taskFive,
-				taskSix
+				taskSix,
+				taskSeven
 			];
 			
 			var taskSetUp = [];
@@ -449,6 +455,9 @@
 			var sperm_jump_speed = 8;
 			var scrollSpeed = 5;
 			
+			var egg_gravity = 0.5;
+			var egg_jump_speed = 1;
+			
 			var targetCalcium = 10;
 			
 			var egg_x = 300;
@@ -516,6 +525,30 @@
 			var plcz_alpha;
 			
 			var colorIndex;
+			
+			function setupTaskSeven()
+			{
+				console.log("Setting up Task Seven");
+				taskSetUp[taskIndex] = true;
+				
+				sperm_x = 200;
+				sperm_y = centerHeight - egg_zp3_image_height*egg_zp3_scale/2;
+				sperm_speed = 0;
+				
+				dangerPointIndex = -1;
+				dangerPoint = {x:-1, y:-1};
+				
+				pointsGenerated = 0;
+				peaksGenerated = 0;
+				
+				topPoints = [];
+				bottomPoints = [];
+				
+				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
+				{
+					addPoints(i);
+				}
+			}
 			
 			function setupTaskOne()
 			{
@@ -1222,8 +1255,151 @@
 					}
 				}
 				
+				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 0))
+				{
+					completeTask();
+				}
+				
 				drawTaskOne();
 				console.log("Task One Loop");
+			}
+			
+			function taskSeven()
+			{
+				if (taskSetUp[taskIndex] == false)
+				{
+					setupTaskSeven();
+				}
+				
+				//Move points to the left
+				for (let i = 0; i < topPoints.length; i++)
+				{
+					topPoints[i].x -= scrollSpeed;
+					bottomPoints[i].x -= scrollSpeed;
+				}
+				
+				if (topPoints[0].x < -distanceBetweenPoints)
+				{
+					topPoints.shift();
+					bottomPoints.shift();
+					addPoints(topPoints[topPoints.length-1].x+distanceBetweenPoints);
+				}
+				
+				for (let i = 0; i < topPoints.length - 1; i++)
+				{
+					if ((sperm_x + sperm_hitbox_x >= topPoints[i].x) 
+					&& (sperm_x + sperm_hitbox_x <= topPoints[i+1].x))
+					{
+						dangerPointIndex = i;
+						i = topPoints.length;
+					}
+				}
+				
+				if (dangerPointIndex > 0)
+				{
+					var x1 = topPoints[dangerPointIndex].x;
+					var x2 = topPoints[dangerPointIndex+1].x;
+					var y1 = topPoints[dangerPointIndex].y;
+					var y2 = topPoints[dangerPointIndex+1].y;
+					
+					var slope = (y2 - y1) / (x2 - x1);
+					var y_intercept = y1 - (slope * x1);
+					var dangerY_top = slope * (sperm_x + sperm_hitbox_x) + y_intercept;
+					
+					x1 = bottomPoints[dangerPointIndex].x;
+					x2 = bottomPoints[dangerPointIndex+1].x;
+					y1 = bottomPoints[dangerPointIndex].y;
+					y2 = bottomPoints[dangerPointIndex+1].y;
+					
+					slope = (y2 - y1) / (x2 - x1);
+					y_intercept = y1 - (slope * x1);
+					var dangerY_bottom = slope * (sperm_x + sperm_hitbox_x) + y_intercept;
+					
+					var sperm_calculatedPosition_y = sperm_y + egg_zp3_image_height*egg_zp3_scale/4;
+					if ((sperm_calculatedPosition_y - dangerY_top < sperm_hitbox_radius)
+					|| (dangerY_bottom - sperm_calculatedPosition_y < sperm_hitbox_radius))
+					{
+						showGame();
+					}
+				}
+				
+				sperm_speed += egg_gravity;
+				sperm_y += sperm_speed;
+				
+				if (space)
+				{
+					sperm_speed -= egg_jump_speed;
+					if (sperm_speed > -4)
+					{
+						sperm_speed = -4;
+					}
+				}
+				
+				drawTaskSeven();
+				console.log("Task Seven Loop");
+			}
+			
+			function drawTaskSeven()
+			{
+				ctx.fillStyle = lightPink;
+				
+				//Background
+				ctx.beginPath();
+				ctx.fillRect(0, 0, 640, 480);
+				
+				//Top Walls
+				ctx.fillStyle = darkPink;
+				ctx.beginPath();
+				ctx.moveTo(640 - 0, 0);
+				for (let i = 0; i < topPoints.length - 1; i++)
+				{
+					ctx.lineTo(640 - topPoints[i].x, topPoints[i].y);
+				}
+				ctx.lineTo(640 - 640, 0);
+				ctx.closePath();
+				ctx.fill();
+				
+				//Bottom Walls
+				ctx.beginPath();
+				ctx.moveTo(640 - 0, 480);
+				for (let i = 0; i < bottomPoints.length - 1; i++)
+				{
+					ctx.lineTo(640 - bottomPoints[i].x, bottomPoints[i].y);
+				}
+				ctx.lineTo(640 - 640, 480);
+				ctx.closePath();
+				ctx.fill();
+				
+				//Lines
+				ctx.strokeStyle = black;
+				ctx.beginPath();
+				for (let i = 0; i < topPoints.length - 1; i++)
+				{
+					ctx.moveTo(640 - topPoints[i].x, topPoints[i].y);
+					ctx.lineTo(640 - topPoints[i+1].x, topPoints[i+1].y);
+					
+					ctx.moveTo(640 - bottomPoints[i].x, bottomPoints[i].y);
+					ctx.lineTo(640 - bottomPoints[i+1].x, bottomPoints[i+1].y);
+				}
+				ctx.stroke();
+				
+				if ((taskIndex < 3) || (taskIndex == 6))
+				{
+					ctx.drawImage(
+						egg_sperm_nucleus_image,
+						640-sperm_x, sperm_y, 
+						egg_zp3_image_width*egg_zp3_scale/2, 
+						egg_zp3_image_height*egg_zp3_scale/2
+					);
+				}
+				
+				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 0))
+				{
+					ctx.textAlign = "center";
+					ctx.fillStyle = black;
+					ctx.font = "30px Impact";
+					ctx.fillText("Task Complete!", 320, 200);
+				}
 			}
 			
 			function drawTaskOne()
@@ -1270,7 +1446,7 @@
 				}
 				ctx.stroke();
 				
-				if (taskIndex < 3)
+				if ((taskIndex < 3) || (taskIndex == 6))
 				{
 					if (tailImageIndex == 1)
 					{
