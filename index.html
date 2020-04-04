@@ -150,6 +150,27 @@
 						}
 					}
 				}
+				else if ((mode == "game") 
+				&& (taskIndex == 6)
+				&& (!gh_successfulHit))
+				{
+					var rect = gameCanvas.getBoundingClientRect();
+					var mouseX = 640 - (event.clientX - rect.left);
+					var mouseY = event.clientY - rect.top;
+					
+					var x1 = sperm_x - egg_zp3_image_height*egg_zp3_scale/4;
+					var y1 = sperm_y + egg_zp3_image_height*egg_zp3_scale/4;
+					
+					var x_dif = x1 - mouseX;
+					var y_dif = y1 - mouseY;
+					
+					var dist = Math.sqrt((x_dif * x_dif) + (y_dif * y_dif));
+					
+					if (dist < egg_zp3_image_height*egg_zp3_scale/4)
+					{
+						gh_successfulHit = true;
+					} 
+				}
 			}
 			
 			function showGame()
@@ -439,6 +460,13 @@
 			var egg_sperm_nucleus_image = new Image();
 			egg_sperm_nucleus_image.src = 'egg_sperm_nucleus.png';
 			
+			var egg_cells_two_image = new Image();
+			egg_cells_two_image.src = 'egg_cells_two.png';
+			var egg_cells_four_image = new Image();
+			egg_cells_four_image.src = 'egg_cells_four.png';
+			var egg_cells_eight_image = new Image();
+			egg_cells_eight_image.src = 'egg_cells_eight.png';
+			
 			var granule_image_width = 32;
 			var granule_image_height = 32;
 			
@@ -548,6 +576,10 @@
 				{
 					addPoints(i);
 				}
+				
+				gh_nextHitIndex = 0; //repurposing as a timer
+				gh_successfulHit = true; //repurposing for timer status
+				gh_messageText = "";
 			}
 			
 			function setupTaskOne()
@@ -1287,8 +1319,8 @@
 				
 				for (let i = 0; i < topPoints.length - 1; i++)
 				{
-					if ((sperm_x + sperm_hitbox_x >= topPoints[i].x) 
-					&& (sperm_x + sperm_hitbox_x <= topPoints[i+1].x))
+					if ((sperm_x + egg_zp3_image_height*egg_zp3_scale/4 >= topPoints[i].x) 
+					&& (sperm_x + egg_zp3_image_height*egg_zp3_scale/4 <= topPoints[i+1].x))
 					{
 						dangerPointIndex = i;
 						i = topPoints.length;
@@ -1333,6 +1365,25 @@
 					{
 						sperm_speed = -4;
 					}
+				}
+				
+				if (gh_nextHitIndex > 275)
+				{
+					gh_messageText = "Task Complete";
+					completeTask();
+				}
+				else if (gh_successfulHit)
+				{
+					gh_nextHitIndex++;
+					gh_messageText = "";
+					if (gh_nextHitIndex%90 == 0)
+					{
+						gh_successfulHit = false;
+					}
+				}
+				else
+				{
+					gh_messageText = "Click the Egg to Duplicate!";
 				}
 				
 				drawTaskSeven();
@@ -1383,7 +1434,35 @@
 				}
 				ctx.stroke();
 				
-				if ((taskIndex < 3) || (taskIndex == 6))
+				
+				if (gh_nextHitIndex > 270)
+				{
+					ctx.drawImage(
+						egg_cells_eight_image,
+						640-sperm_x, sperm_y, 
+						egg_zp3_image_width*egg_zp3_scale/2, 
+						egg_zp3_image_height*egg_zp3_scale/2
+					);
+				}
+				else if (gh_nextHitIndex > 180)
+				{
+					ctx.drawImage(
+						egg_cells_four_image,
+						640-sperm_x, sperm_y, 
+						egg_zp3_image_width*egg_zp3_scale/2, 
+						egg_zp3_image_height*egg_zp3_scale/2
+					);
+				}
+				else if (gh_nextHitIndex > 90)
+				{
+					ctx.drawImage(
+						egg_cells_two_image,
+						640-sperm_x, sperm_y, 
+						egg_zp3_image_width*egg_zp3_scale/2, 
+						egg_zp3_image_height*egg_zp3_scale/2
+					);
+				}
+				else
 				{
 					ctx.drawImage(
 						egg_sperm_nucleus_image,
@@ -1393,13 +1472,10 @@
 					);
 				}
 				
-				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 0))
-				{
-					ctx.textAlign = "center";
-					ctx.fillStyle = black;
-					ctx.font = "30px Impact";
-					ctx.fillText("Task Complete!", 320, 200);
-				}
+				ctx.textAlign = "center";
+				ctx.fillStyle = black;
+				ctx.font = "30px Impact";
+				ctx.fillText(gh_messageText, 250, 75);
 			}
 			
 			function drawTaskOne()
