@@ -472,6 +472,8 @@
 			egg_cells_four_image.src = 'egg_cells_four.png';
 			var egg_cells_eight_image = new Image();
 			egg_cells_eight_image.src = 'egg_cells_eight.png';
+			var egg_cells_sixteen_image = new Image();
+			egg_cells_sixteen_image.src = 'egg_cells_sixteen.png';
 			
 			var granule_image_width = 32;
 			var granule_image_height = 32;
@@ -1373,7 +1375,7 @@
 					}
 				}
 				
-				if (gh_nextHitIndex > 275)
+				if (gh_nextHitIndex > 365)
 				{
 					gh_messageText = "Task Complete";
 					completeTask();
@@ -1441,7 +1443,16 @@
 				ctx.stroke();
 				
 				
-				if (gh_nextHitIndex > 270)
+				if (gh_nextHitIndex > 360)
+				{
+					ctx.drawImage(
+						egg_cells_sixteen_image,
+						640-sperm_x, sperm_y, 
+						egg_zp3_image_width*egg_zp3_scale/2, 
+						egg_zp3_image_height*egg_zp3_scale/2
+					);
+				}
+				else if (gh_nextHitIndex > 270)
 				{
 					ctx.drawImage(
 						egg_cells_eight_image,
