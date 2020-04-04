@@ -86,7 +86,7 @@
 				{
 					header: "Emplanting the Egg in the Uterus",
 					description: "Educational description goes here.",
-					instructions: "Instructions go here."
+					instructions: "Press the space bar to hatch and implant in the uterus."
 				}
 			];
 			
@@ -99,7 +99,7 @@
 				taskFive,
 				taskSix,
 				taskSeven,
-				function () {alert("This one isn't done yet, you big dingus!"); completeTask();showInfo();}
+				taskEight
 			];
 			
 			var taskSetUp = [];
@@ -475,6 +475,18 @@
 			var egg_cells_sixteen_image = new Image();
 			egg_cells_sixteen_image.src = 'egg_cells_sixteen.png';
 			
+			var egg_shell_image = new Image();
+			egg_shell_image.src = 'egg_shell.png';
+			var egg_hatched_image = new Image();
+			egg_hatched_image.src = 'egg_hatched.png';
+			var finish_image = new Image();
+			finish_image.src = 'finish.png';
+			
+			var finish_image_width = 899;
+			var finish_image_height = 744;
+			
+			var finish_image_scale = 1/3;
+			
 			var granule_image_width = 32;
 			var granule_image_height = 32;
 			
@@ -649,6 +661,26 @@
 				{
 					addPoints(i);
 					calciumPoints.push(-1);
+				}
+			}
+			
+			function setupTaskEight()
+			{
+				console.log("Setting up Task Eight");
+				taskSetUp[taskIndex] = true;
+				
+				sperm_x = egg_x; //repurposing for hatched egg
+				sperm_y = egg_y;
+				sperm_speed = 0;
+				
+				topPoints = [];
+				bottomPoints = [];
+				pointsGenerated = 0;
+				peaksGenerated = 0;
+				
+				for (let i = 0; i < 640 + distanceBetweenPoints*3; i += distanceBetweenPoints)
+				{
+					addPoints(i);
 				}
 			}
 			
@@ -1304,6 +1336,29 @@
 				console.log("Task One Loop");
 			}
 			
+			function taskEight()
+			{
+				if (taskSetUp[taskIndex] == false)
+				{
+					setupTaskEight();
+				}
+				
+				if (space)
+				{
+					sperm_speed = -2;
+				}
+				
+				sperm_x += sperm_speed;
+				
+				if (sperm_x < 45)
+				{
+					completeTask();
+				}
+				
+				drawTaskEight();
+				console.log("Task Eight Loop");
+			}
+			
 			function taskSeven()
 			{
 				if (taskSetUp[taskIndex] == false)
@@ -1664,6 +1719,40 @@
 					ctx.fillStyle = black;
 					ctx.font = "30px Impact";
 					ctx.fillText("Task Complete!", 320, 200);
+				}
+			}
+			
+			function drawTaskEight()
+			{
+				drawTaskOne();
+				
+				ctx.drawImage(
+					egg_shell_image,
+					egg_x + 100, egg_y + 100, 
+					egg_zp3_image_width*egg_zp3_scale/2, 
+					egg_zp3_image_height*egg_zp3_scale/2
+				);
+				
+				ctx.drawImage(
+					egg_hatched_image,
+					sperm_x + 100, egg_y + 100, 
+					egg_zp3_image_width*egg_zp3_scale/2, 
+					egg_zp3_image_height*egg_zp3_scale/2
+				);
+				
+				ctx.drawImage(
+					finish_image,
+					50, 225, 
+					finish_image_width*finish_image_scale, 
+					finish_image_height*finish_image_scale
+				);
+				
+				if (sperm_x < 45)
+				{
+					ctx.textAlign = "center";
+					ctx.fillStyle = black;
+					ctx.font = "30px Impact";
+					ctx.fillText("Task Complete!", 320, 100);
 				}
 			}
 			
