@@ -81,7 +81,7 @@
 				{
 					header: "Returning to the Uterus",
 					description: "Educational description goes here.",
-					instructions: "Press the space bar to guide the egg back down the fallopian tube to the uterus. Click the egg when prompted to duplicate and hatch."
+					instructions: "Press the space bar to guide the egg back down the fallopian tube to the uterus. Click the egg when prompted to divide and hatch."
 				},
 				{
 					header: "Emplanting the Egg in the Uterus",
@@ -1457,7 +1457,7 @@
 					}
 					else
 					{
-						gh_messageText = "Click the Egg to Duplicate!";
+						gh_messageText = "Click the Egg to Divide!";
 					}
 				}
 				
@@ -1526,7 +1526,7 @@
 				if (gh_nextHitIndex > 360)
 				{
 					ctx.drawImage(
-						egg_cells_sixteen_image,
+						egg_hatched_image,
 						640-sperm_x - hatched_x, sperm_y, 
 						egg_zp3_image_width*egg_zp3_scale/2, 
 						egg_zp3_image_height*egg_zp3_scale/2
