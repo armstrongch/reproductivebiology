@@ -508,10 +508,12 @@
 			var finish_image = new Image();
 			finish_image.src = 'finish.png';
 			
-			var finish_image_width = 899;
-			var finish_image_height = 744;
+			var baby_image = new Image();
+			baby_image.src = 'baby.png';
 			
-			var finish_image_scale = 1/3;
+			var baby_image_width = 564;
+			var baby_image_height = 834;
+			var baby_image_scale = 1/2;
 			
 			var granule_image_width = 32;
 			var granule_image_height = 32;
@@ -708,6 +710,8 @@
 				{
 					addPoints(i);
 				}
+				
+				tailMoveCounter = 0; // Repurposing for baby countdown
 			}
 			
 			function setupTaskThree()
@@ -1379,6 +1383,12 @@
 				
 				if (sperm_x < 0)
 				{
+					sperm_speed = 0;
+					tailMoveCounter++;
+				}
+				
+				if (tailMoveCounter > 60)
+				{
 					completeTask();
 				}
 				
@@ -1777,20 +1787,42 @@
 			{
 				drawTaskOne();
 				
-				ctx.drawImage(
-					egg_hatched_image,
-					sperm_x + 100, sperm_y + 100, 
-					egg_zp3_image_width*egg_zp3_scale/2, 
-					egg_zp3_image_height*egg_zp3_scale/2
-				);
-				
-				if (sperm_x < 0)
+				if (tailMoveCounter > 50)
 				{
-					ctx.textAlign = "center";
-					ctx.fillStyle = black;
-					ctx.font = "30px Impact";
-					ctx.fillText("Task Complete!", 320, 100);
+					ctx.drawImage(
+						baby_image,
+						200, 50, 
+						baby_image_width*baby_image_scale, 
+						baby_image_height*baby_image_scale
+					);
+					
+					if (tailMoveCounter > 60)
+					{
+						ctx.textAlign = "center";
+						ctx.fillStyle = black;
+						ctx.font = "80px Impact";
+						ctx.fillText("CONGRATULATIONS!", 320, 350);
+					}
 				}
+				else 
+				{
+					ctx.drawImage(
+						egg_hatched_image,
+						sperm_x + 100, sperm_y + 100, 
+						egg_zp3_image_width*egg_zp3_scale/2, 
+						egg_zp3_image_height*egg_zp3_scale/2
+					);
+					
+					if (sperm_x < 0)
+					{
+						ctx.textAlign = "center";
+						ctx.fillStyle = black;
+						ctx.font = "30px Impact";
+						ctx.fillText("About 40 Weeks Later...", 320, 100);
+					}
+				}
+				
+				
 			}
 			
 			function drawTaskFour()
