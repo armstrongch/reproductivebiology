@@ -148,7 +148,7 @@
 			function canvasClick()
 			{
 				if ((mode == "game") 
-				&& (taskIndex == 4) 
+				&& (taskIndex == 5) 
 				&& (sperm_speed > 0)
 				&& (colorIndex == -1)
 				&& (plcz_alpha > 0.5))
@@ -166,7 +166,7 @@
 					}
 				}
 				else if ((mode == "game")
-				&& (taskIndex == 5))
+				&& (taskIndex == 6))
 				{
 					var rect = gameCanvas.getBoundingClientRect();
 					var mouseX = event.clientX - rect.left;
@@ -183,7 +183,7 @@
 					}
 				}
 				else if ((mode == "game") 
-				&& (taskIndex == 6)
+				&& (taskIndex == 7)
 				&& (!gh_successfulHit))
 				{
 					var rect = gameCanvas.getBoundingClientRect();
@@ -383,7 +383,7 @@
 			function spaceReleased()
 			{
 				console.log("Released Space!");
-				if ((taskIndex != 3) && (taskIndex != 4))
+				if ((taskIndex != 4) && (taskIndex != 5))
 				{
 					space = false;
 				}
@@ -882,7 +882,7 @@
 			{
 				if (pointsGenerated == 0)
 				{
-					if (taskIndex > 1)
+					if (taskIndex > 2)
 					{
 						mostRecentGeneratedTopHeight = centerHeight - minDistFromCenter_taskThree - Math.floor((Math.random() * (maxDistFromCenter_taskThree - minDistFromCenter_taskThree)));
 						
@@ -1353,7 +1353,7 @@
 					}
 				}
 				
-				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 0))
+				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 1))
 				{
 					completeTask();
 				}
@@ -1645,7 +1645,7 @@
 				}
 				ctx.stroke();
 				
-				if ((taskIndex < 3) || (taskIndex == 6))
+				if ((taskIndex < 4) || (taskIndex == 7))
 				{
 					if (tailImageIndex == 1)
 					{
@@ -1659,7 +1659,7 @@
 					}
 				}
 				
-				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 0))
+				if ((peaksGenerated > finishPeakIndex) && (taskIndex == 1))
 				{
 					ctx.textAlign = "center";
 					ctx.fillStyle = black;
