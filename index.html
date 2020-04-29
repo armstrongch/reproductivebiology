@@ -30,7 +30,7 @@
 			<h1 id="header"></h1>
 			<h2 id="description"><h2>
 			<h2 id="instructions"><h2>
-			<h2>Press Space to Begin!</h2>
+			<h2 id="spaceToBegin">Press Space to Begin!</h2>
 		</div>
 		<canvas id="gameCanvas" width="0" height="0" onclick="canvasClick(event)"></canvas>
 		<div id="buttonDiv">
@@ -49,6 +49,11 @@
 			
 			var tasks = 
 			[
+				{
+					header: "<br/><br/>FERTILIZATION<br/>THE GAME",
+					description: "<br/><br/>Biology of Reproduction",
+					instructions: "<br/><br/>Designed by:<br/>Kevin Connolly"
+				},
 				{
 					header: "Navigate the Female Reproductive Tract",
 					description: "Sexual reproduction requires the interaction of two specialized cells, the sperm and egg. In order for sperm to reach the egg, it must navigate through the female reproductive tract. The sperm starts in the vagina, moves through the cervix, continues through the uterus, and must make its way to the fallopian tube in order to find the egg.",
@@ -93,6 +98,7 @@
 			
 			var gameLoops =
 			[
+				titleScreen,
 				taskOne,
 				taskTwo,
 				taskThree,
@@ -105,6 +111,12 @@
 			
 			var taskSetUp = [];
 			
+			function titleScreen()
+			{
+				console.log('This function does nothing');
+				showInfo();
+			}
+			
 			function showInfo()
 			{
 				$(gameCanvas).css('display', 'none');
@@ -114,6 +126,19 @@
 				$('#header').html(task.header);
 				$('#description').html(task.description);
 				$('#instructions').html(task.instructions);
+				if (taskIndex > 0)
+				{
+					$('#instructions').html("<u>Directions:</u> " + $('#instructions').html());
+					$('#spaceToBegin').html('Press Space to Begin!');
+					$('#previousButton').css('display', 'inline');
+					$('#nextButton').html('<h3>Next Task</h3>');
+				}
+				else
+				{
+					$('#spaceToBegin').html('');
+					$('#previousButton').css('display', 'none');
+					$('#nextButton').html('<h3>Begin</h3>');
+				}
 				
 				mode = "info";
 				setupButtons();
